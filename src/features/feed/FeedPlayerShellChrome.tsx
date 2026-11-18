@@ -9,7 +9,7 @@ import { PlaybackProgress, PlaybackTime, PlayerControls, type PlaybackClock, typ
 import type { FeedMeta } from "./useFeedActions";
 import type { FeedPanel } from "./useFeedViewport";
 import {
-  IBoltF, IClose, ICompress, ILockF, IPauseF, IPlayF, ISearch, IVertSwap, IVol, IVolMute,
+  IBack, IBoltF, IClose, ICompress, IList, ILockF, IPauseF, IPlayF, ISearch, IVertSwap, IVol, IVolMute,
 } from "../../shared/ui/icons";
 
 const VideoDetailsPanel = lazy(() => import("./VideoDetailsPanel"));
@@ -156,7 +156,7 @@ export function FeedPlayerShellChrome({
           style={{ top: rotated ? 14 : "calc(var(--sat, 0px) + 54px)", background: "rgba(0,0,0,.36)", color: lockArmed || speedLock ? "rgba(255,255,255,.96)" : "rgba(255,255,255,.88)" }}>
           <IBoltF size={13} />
           {/* 两态文案等宽（6 字），避免命中矩形在手指停留时伸缩造成 armed 抖动 */}
-          {effRate}x {holdSpeed ? (lockArmed ? "松手即可锁定" : "移入此处锁定") : speedLock ? "已锁定 · 点按解除" : holdSlow ? "减速中 · 松开恢复" : "倍速"}
+          {effRate}x {holdSpeed ? (lockArmed ? "Thả để khóa" : "Kéo lên để khóa") : speedLock ? "Đã khóa · Bấm để hủy" : holdSlow ? "Đang giảm tốc · Thả để phục hồi" : "Tốc độ"}
         </Button>
       )}
 
@@ -165,22 +165,22 @@ export function FeedPlayerShellChrome({
         <div
           className="absolute inset-x-0 z-30 px-4"
           style={{
-            bottom: rotated ? 46 : "calc(var(--sab, 0px) + 46px)",
+            bottom: rotated ? 48 : "calc(var(--sab, 0px) + 48px)",
             paddingLeft: fsSafeLeft,
             paddingRight: fsSafeRight,
-            height: 36,
+            height: 42,
           }}>
           <div ref={barRef} className="relative h-full" style={{ touchAction: "none" }}
             onPointerDown={onBarDown} onPointerMove={onBarMove} onPointerUp={(e) => onBarUp(e, false)} onPointerCancel={(e) => onBarUp(e, true)}>
-            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] rounded-full" style={{ background: "rgba(255,255,255,.28)" }}>
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[4px] rounded-full" style={{ background: "rgba(255,255,255,.28)" }}>
               <PlaybackProgress clock={playbackClock} duration={duration} preview={barPct} className="h-full rounded-full bg-white"
                 style={{ transition: barPct !== null ? "none" : "width .25s linear" }} />
             </div>
             <PlaybackProgress clock={playbackClock} duration={duration} preview={barPct} position
-              className="absolute top-1/2 w-[9px] h-[9px] rounded-full bg-white pointer-events-none"
+              className="absolute top-1/2 w-[12px] h-[12px] rounded-full bg-white pointer-events-none"
               style={{
                 transform: "translate(-50%, -50%)",
-                boxShadow: "0 0 8px rgba(0,0,0,.55)",
+                boxShadow: "0 0 8px rgba(0,0,0,.65)",
                 transition: barPct !== null ? "none" : "left .25s linear",
               }} />
             {barPct !== null && (
@@ -192,30 +192,63 @@ export function FeedPlayerShellChrome({
         </div>
       )}
 
-      {/* 移动端：沉浸全屏（安卓 WebView 不支持 Fullscreen API，改用应用内沉浸层） */}
+      {/* 移动端：沉浸全屏 Header & Footer Controls */}
       {!isDesktop && fs && !idle && (
         <>
-          <Button onClick={exitFs} aria-label="退出全屏"
-            className="hg-chip-strong absolute z-40 w-11 h-11 rounded-full backdrop-blur-md flex items-center justify-center pressable elev-1"
+          {/* Top Bar: Nút quay lại + Tên phim + Số tập + Chọn tập + Thu nhỏ */}
+          <div
+            className="absolute inset-x-0 z-40 flex items-center justify-between px-4 pointer-events-auto"
             style={{
-              top: rotated ? 12 : "calc(var(--sat, 0px) + 6px)",
-              right: rotated ? "calc(var(--sab, 0px) + 12px)" : "calc(var(--sar, 0px) + 12px)",
+              top: rotated ? 12 : "calc(var(--sat, 0px) + 8px)",
+              paddingLeft: fsSafeLeft,
+              paddingRight: fsSafeRight,
             }}>
-            <ICompress size={18} />
-          </Button>
-          <div className="absolute inset-x-0 z-40 flex items-center gap-3 px-4"
+            <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+              <Button
+                onClick={exitFs}
+                aria-label="Quay lại"
+                className="hg-chip-strong w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center pressable shrink-0 elev-1">
+                <IBack size={20} className="text-white" />
+              </Button>
+              <div className="min-w-0 flex-1 flex flex-col justify-center">
+                <span className="text-[14px] font-bold text-white truncate drop-shadow">{meta.title}</span>
+                {episodes.length > 0 && (
+                  <span className="text-[11px] font-medium text-white/80">Tập {curEp}/{episodes.length}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {kind === "video" && episodes.length > 1 && (
+                <Button
+                  onClick={() => setPanel("episodes")}
+                  className="hg-chip-strong px-3 h-9 rounded-full backdrop-blur-md flex items-center gap-1 text-[12px] font-semibold text-white pressable elev-1">
+                  <IList size={15} />
+                  <span>Chọn tập</span>
+                </Button>
+              )}
+              <Button
+                onClick={exitFs}
+                aria-label="Thoát toàn màn hình"
+                className="hg-chip-strong w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center pressable elev-1">
+                <ICompress size={18} className="text-white" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Bottom Bar: Play/Pause, Thời lượng, Tốc độ, Tập trước/sau */}
+          <div className="absolute inset-x-0 z-40 flex items-center gap-2 px-4"
             style={{
               bottom: rotated ? 10 : "calc(var(--sab, 0px) + 10px)",
               paddingLeft: fsSafeLeft,
               paddingRight: fsSafeRight,
             }}>
-            <Button onClick={() => videoRef.current?.toggle()} aria-label={paused ? "播放" : "暂停"}
+            <Button onClick={() => videoRef.current?.toggle()} aria-label={paused ? "Phát" : "Tạm dừng"}
               className="hg-chip shrink-0 w-9 h-9 rounded-full flex items-center justify-center pressable">
               {paused ? <IPlayF size={18} /> : <IPauseF size={17} />}
             </Button>
             <PlaybackTime clock={playbackClock} className="shrink-0 text-[12px] font-semibold hg-ink-2 tabular-nums" />
             <Button
-              aria-label={speedLock ? "解除倍速锁定" : `切换倍速，当前 ${effRate} 倍`}
+              aria-label={speedLock ? "Hủy khóa tốc độ" : `Đổi tốc độ, hiện tại ${effRate}x`}
               onClick={() => {
                 if (speedLock) { setSpeedLock(0); return; }
                 const seq = [1, 1.25, 1.5, 2];
@@ -225,11 +258,18 @@ export function FeedPlayerShellChrome({
               className={`ml-auto shrink-0 flex items-center gap-1 px-2.5 h-8 rounded-full text-[13px] font-bold pressable ${effRate !== 1 ? "bg-white text-[#191919]" : "hg-chip hg-ink-2"}`}>
               <IBoltF size={12} />{effRate}x
             </Button>
+            {curEp > 1 && (
+              <Button onClick={() => pickEp(curEp - 1)}
+                className="shrink-0 flex items-center gap-1 px-2.5 h-8 rounded-full text-[13px] font-semibold hg-chip hg-ink-2 pressable"
+                aria-label={`Tập trước · Tập ${curEp - 1}`}>
+                Tập trước
+              </Button>
+            )}
             {curEp < episodes.length && (
               <Button onClick={() => pickEp(curEp + 1)}
                 className="shrink-0 flex items-center gap-1 px-2.5 h-8 rounded-full text-[13px] font-semibold hg-chip hg-ink-2 pressable"
-                aria-label={`下一集 第${curEp + 1}集`}>
-                <IVertSwap size={12} />下集
+                aria-label={`Tập sau · Tập ${curEp + 1}`}>
+                <IVertSwap size={12} />Tập sau
               </Button>
             )}
             <span className="shrink-0 text-[12px] hg-ink-4 tabular-nums">{fmtTime(duration)}</span>
@@ -274,16 +314,16 @@ export function FeedPlayerShellChrome({
             </div>
           </Sheet>
 
-          <Sheet open={active && (panel === "detail" || panel === "episodes")} label={panel === "detail" ? "视频详情" : "选集"} onClose={() => setPanel(null)}>
+          <Sheet open={active && (panel === "detail" || panel === "episodes")} label={panel === "detail" ? "Chi tiết video" : "Chọn tập"} onClose={() => setPanel(null)}>
             <div className="video-details-sheet">
               {/* 双栏抽屉：详情 / 选集 */}
               <div className="shrink-0 flex items-center gap-2 px-4 pb-2">
-                <SegmentedControl className="flex-1" aria-label="剧集面板" activeIndex={panel === "detail" ? 0 : 1}>
-                  {([["detail", "详情"], ["episodes", "选集"]] as const).map(([k, l]) => (
+                <SegmentedControl className="flex-1" aria-label="Bảng chọn" activeIndex={panel === "detail" ? 0 : 1}>
+                  {([["detail", "Chi tiết"], ["episodes", "Chọn tập"]] as const).map(([k, l]) => (
                     <Button aria-pressed={panel === k} key={k} onClick={() => setPanel(k)}>{l}</Button>
                   ))}
                 </SegmentedControl>
-                <Button onClick={() => setPanel(null)} aria-label="关闭"
+                <Button onClick={() => setPanel(null)} aria-label="Đóng"
                   className="ios-icon-button">
                   <IClose size={14} />
                 </Button>
@@ -327,13 +367,13 @@ export function FeedMobileTopTools({
         // 触屏下按钮实际 44px：退出键占 12–56，锁定组从 68 起，留 12px 间距
         right: fs ? (rotated ? "calc(var(--sab, 0px) + 68px)" : "calc(var(--sar, 0px) + 68px)") : "calc(var(--sar, 0px) + 12px)",
       }}>
-      {!fs && !clean && <Button onClick={() => setMuted(m => !m)} aria-label={muted ? "取消静音" : "静音"}
+      {!fs && !clean && <Button onClick={() => setMuted(m => !m)} aria-label={muted ? "Bật âm thanh" : "Tắt tiếng"}
         className="hg-chip w-9 h-9 rounded-full flex items-center justify-center pressable elev-1">
         {muted ? <IVolMute size={17} /> : <IVol size={17} />}
       </Button>}
-      <Button onClick={lockControls} aria-label="锁定播放控制" title="锁定播放控制" aria-pressed={false}
+      <Button onClick={lockControls} aria-label="Khóa điều khiển" title="Khóa điều khiển" aria-pressed={false}
         className={`hg-chip ${fs ? "w-11 h-11" : "w-9 h-9"} rounded-full flex items-center justify-center pressable elev-1`}><ILockF size={17} /></Button>
-      {!fs && !clean && <Button onClick={onSearchTab} aria-label="搜索"
+      {!fs && !clean && <Button onClick={onSearchTab} aria-label="Tìm kiếm"
         className="hg-chip w-9 h-9 rounded-full flex items-center justify-center pressable elev-1"><ISearch size={18} /></Button>}
     </div>
   );

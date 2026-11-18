@@ -13,9 +13,9 @@ import { Empty } from "../../shared/ui/ui";
 import { IAward, IBack, IChevR, IFilm, IFlame, ILayers, ISearch, ISpark, ITag, ITrophy } from "../../shared/ui/icons";
 
 export const CHANNELS = [
-  { cate: "ai-duanju", name: "AI成人短剧", Icon: IFilm },
-  { cate: "ai-manju", name: "AI成人漫剧", Icon: ISpark },
-  { cate: "original", name: "原创", Icon: IAward },
+  { cate: "ai-duanju", name: "Phim ngắn AI", Icon: IFilm },
+  { cate: "ai-manju", name: "Truyện tranh AI", Icon: ISpark },
+  { cate: "original", name: "Tác phẩm gốc", Icon: IAward },
 ] as const;
 
 /* ================= 分类总览 ================= */
@@ -95,23 +95,23 @@ export default function Category({ wide, active }: { wide: boolean; active: bool
     <div className="ios-page absolute inset-0 bg-bg flex flex-col">
       <div className="ios-page-heading shrink-0">
         <div className="flex items-baseline gap-2.5">
-          <h1 className="ios-page-title text-on">分类</h1>
-          <span className="text-[13px] font-medium text-mut">{CHANNELS.length + 1} 个频道</span>
+          <h1 className="ios-page-title text-on">Thể loại</h1>
+          <span className="text-[13px] font-medium text-mut">{CHANNELS.length + 1} kênh</span>
         </div>
       </div>
 
       <div className="flex-1 scroll-y pb-24 pt-2">
         {/* 排行榜入口：只在移动端显示（底部导航没有排行榜，桌面侧栏已有） */}
         {!wide && (
-          <CollectionLink icon={<ITrophy size={18} />} title="排行榜"
+          <CollectionLink icon={<ITrophy size={18} />} title="Bảng xếp hạng"
             onClick={() => push({ kind: "ranks" })} className="mb-2.5 w-full" />
         )}
 
         {/* 专题 + 标签入口 */}
         <CollectionLinks className="ios-category-links mb-6">
-          <CollectionLink icon={<ILayers size={18} />} title="专题"
+          <CollectionLink icon={<ILayers size={18} />} title="Chuyên đề"
             onClick={() => push({ kind: "topics" })} />
-          <CollectionLink icon={<ITag size={18} />} title="标签"
+          <CollectionLink icon={<ITag size={18} />} title="Thẻ phân loại"
             onClick={() => push({ kind: "tags" })} />
         </CollectionLinks>
 
@@ -129,10 +129,10 @@ export default function Category({ wide, active }: { wide: boolean; active: bool
                   <span role="heading" aria-level={2} className="block text-[16px] font-bold text-on leading-tight">{c.name}</span>
                 </span>
                 <span className="inline-flex items-center gap-0.5 text-[13px] font-medium leading-none text-mut group-hover:text-primary transition-colors shrink-0">
-                  <span>全部</span><IChevR size={14} />
+                  <span>Tất cả</span><IChevR size={14} />
                 </span>
               </Button>
-              <FilteredContent items={list} scopeKey={c.cate}>{visible => <div className="scroll-x flex gap-3 snap-x" role="group" aria-label={`${c.name}影片预览`}>
+              <FilteredContent items={list} scopeKey={c.cate}>{visible => <div className="scroll-x flex gap-3 snap-x" role="group" aria-label={`Xem trước ${c.name}`}>
                 {visible.map((v) => (
                   <RowCard key={v.id} v={v} onOpen={() => push({ kind: "feed", videoIds: visible.map((x) => x.id), index: visible.findIndex((x) => x.id === v.id), title: c.name })} />
                 ))}
@@ -143,29 +143,29 @@ export default function Category({ wide, active }: { wide: boolean; active: bool
         })}
 
         {/* 吃瓜 */}
-        <section aria-label="吃瓜" className="mb-5 a-rise">
+        <section aria-label="Tin tức & Bài viết" className="mb-5 a-rise">
           <Button onClick={() => push({ kind: "posts" })}
             className="w-full flex items-center gap-3 mb-3 text-left pressable group">
             <span className="w-9 h-9 rounded-[12px] bg-pc text-on-pc flex items-center justify-center shrink-0">
               <IFlame size={18} strokeWidth={1.9} />
             </span>
             <span className="flex-1 min-w-0">
-              <span role="heading" aria-level={2} className="block text-[16px] font-bold text-on leading-tight">吃瓜</span>
+              <span role="heading" aria-level={2} className="block text-[16px] font-bold text-on leading-tight">Tin tức & Bài viết</span>
             </span>
             <span className="inline-flex items-center gap-0.5 text-[13px] font-medium leading-none text-mut group-hover:text-primary transition-colors shrink-0">
-              <span>全部</span><IChevR size={14} />
+              <span>Tất cả</span><IChevR size={14} />
             </span>
           </Button>
-          <FilteredContent items={posts} scopeKey="posts">{visible => <div className="scroll-x flex gap-3 snap-x" role="group" aria-label="吃瓜内容预览">
+          <FilteredContent items={posts} scopeKey="posts">{visible => <div className="scroll-x flex gap-3 snap-x" role="group" aria-label="Xem trước bài viết">
             {visible.map((post) => (
               <div key={post.id} className="ios-row-card"><MediaCard title={post.title} cover={post.cover}
-                subtitle={`${fmt(post.hot)} 次浏览`} onOpen={() => push({ kind: "post", id: post.id })} /></div>
+                subtitle={`${fmt(post.hot)} lượt xem`} onOpen={() => push({ kind: "post", id: post.id })} /></div>
             ))}
-            {!posts.length && <PreviewStatus name="吃瓜" loading={loading.posts !== false} error={errors.posts} onRetry={() => void loadPreview("posts")} />}
+            {!posts.length && <PreviewStatus name="Tin tức" loading={loading.posts !== false} error={errors.posts} onRetry={() => void loadPreview("posts")} />}
           </div>}</FilteredContent>
         </section>
 
-        <div className="text-center text-[12px] text-dim pt-1">— 已展示全部频道 —</div>
+        <div className="text-center text-[12px] text-dim pt-1">— Đã hiển thị toàn bộ kênh —</div>
       </div>
       {wide && <div />}
     </div>
@@ -174,22 +174,22 @@ export default function Category({ wide, active }: { wide: boolean; active: bool
 
 function PreviewStatus({ name, loading, error, onRetry }: { name: string; loading: boolean; error?: string; onRetry: () => void }) {
   return <div role="status" aria-busy={loading} className="h-[150px] flex flex-col justify-center items-start gap-2 text-[12px] text-dim px-1">
-    <span>{loading ? "加载中…" : error || "暂无内容"}</span>
-    {!loading && error && <Button aria-label={`重试${name}`} onClick={onRetry} className="text-primary pressable">重试</Button>}
+    <span>{loading ? "Đang tải…" : error || "Chưa có nội dung"}</span>
+    {!loading && error && <Button aria-label={`Thử lại ${name}`} onClick={onRetry} className="text-primary pressable">Thử lại</Button>}
   </div>;
 }
 
 /* ================= 频道详情页 ================= */
 const CHANNEL_SORTS = [
-  { value: "latest", label: "最近更新" },
-  { value: "hot_window", label: "当前热播" },
-  { value: "random", label: "精选推荐" },
+  { value: "latest", label: "Mới cập nhật" },
+  { value: "hot_window", label: "Đang thịnh hành" },
+  { value: "random", label: "Đề xuất chọn lọc" },
 ] as const;
 
 const ORIGINAL_CATES = [
-  { value: "all", label: "全部原创" },
-  { value: "ai-manju", label: "原创漫剧" },
-  { value: "ai-duanju", label: "原创短剧" },
+  { value: "all", label: "Tất cả tác phẩm gốc" },
+  { value: "ai-manju", label: "Truyện AI gốc" },
+  { value: "ai-duanju", label: "Phim ngắn AI gốc" },
 ] as const;
 
 const originalSort = (cate: (typeof ORIGINAL_CATES)[number]["value"]) =>

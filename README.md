@@ -1,83 +1,83 @@
-> ### ⚠️ 中国大陆下载与传播限制
->
-> **禁止在中国大陆地区下载、复制、分享、传播本软件及通过本软件获取的相关资源；不得提供相关下载链接或传播服务。**
->
-> 本条亦适用于相关安装包、更新包、镜像与转发。若不符合本条要求，请停止获取、传播本应用并退出。
-
 <div align="center">
 
 <img src="hghubx.svg" alt="HGhubX" width="128" height="128" />
 
-# HGhubX
+# HGhubX (Bản Fork Tiếng Việt · Android Optimized)
 
-**第三方客户端 · Rust + Tauri 2**
+**Ứng dụng xem video đa nền tảng · Rust + Tauri v2**
 
-Windows / macOS / Linux / Android / iOS · iOS 圆角与玻璃材质 · 沉浸式竖屏播放
+Hỗ trợ: Android / Windows / macOS / Linux / iOS · Giao diện phong cách iOS Liquid Glass · Trình phát video cảm ứng chuyên sâu cho Android
 
 </div>
 
-> ⚠️ 免责声明：本项目仅供 **学习与技术交流**，不提供、不存储、不分发任何音视频内容，与任何内容提供方无关联。
-> 所有内容均来自第三方站点，版权归原作者与上游站点所有；使用者应自行遵守所在地法律法规，因使用产生的任何后果由使用者自行承担。
+---
 
-> 如您是版权方、上游站点、平台或有关机构，认为本仓库或官方发布渠道的内容涉及您的权益，请通过 GitHub Issues 联系；我会尽快核实并配合处理，包括修改或移除内容、暂停功能、停止维护、归档或调整仓库可见性。
+## 🌟 Điểm nổi bật của bản Fork (`dangtrandang/HGfork`)
 
-**使用须知**
+### 1. 🇻🇳 Việt hóa 100% Giao diện (UI/UX)
+- Toàn bộ giao diện người dùng, thanh điều hướng, tìm kiếm, khám phá danh mục, cài đặt hệ thống, bộ lọc nội dung, bảng chọn tập và thông báo lỗi đã được chuyển ngữ sang Tiếng Việt hoàn chỉnh, tự nhiên và dễ hiểu.
 
-- **以访客身份正常使用**：像普通访客一样浏览就好，请勿滥用本项目。
-- **不要给上游增加压力**：本项目本身不提供下载功能，请勿改动代码去做批量下载 / 批量抓取，也不要高频轮询、并发轰炸接口或挂机刷播放量；内置的封面与播放列表缓存请不要改小或关掉。
-- **尊重上游版权**：不要去除水印与站点标识，不要把剧集搬运、转码、修改后二次分发到别处（网盘、资源站、其他 App 等），更不能改完拿出去出售。
-- **不要公开传播接口与直链**：接口地址、播放直链、解密方式请勿公开张贴或打包成「资源站」——上游一旦封禁，所有人都没法再用。
-- **不要商业化**：禁止打包出售、接入广告 / 会员 / 付费点播，或作为收费服务的一部分分发（详见 [LICENSE](LICENSE)）。
-- **合理使用**：仅供个人学习、研究与自用；请在 24 小时内删除相关资源，并支持正版。
-- **遵守当地法律**：使用者应自行判断并承担合规责任。
+### 2. 📴 Chế độ Offline-first (Không cần tài khoản)
+- Gỡ bỏ hoàn toàn sự phụ thuộc vào hệ thống đăng nhập tài khoản máy chủ Trung Quốc.
+- Chuyển mục **"Tôi"** thành **"Tủ phim cá nhân"**: Lưu lịch sử xem tiếp, danh sách theo dõi tác giả và phim yêu thích trực tiếp vào bộ nhớ máy (`localStorage`). Bạn có thể sử dụng đầy đủ mọi tính năng lưu trữ mà không lo lỗi mạng, lỗi tài khoản hay lộ thông tin cá nhân.
 
-> ⚖️ 许可证自 v1.1.0 版本起改为 **PolyForm Noncommercial 1.0.0**：**禁止任何商业用途**——
-> 包括打包出售、接入付费/会员/广告变现、作为收费产品或服务的一部分分发。
-> 个人学习、研究、自用与非营利使用不受限制，详见 [LICENSE](LICENSE)。
+### 3. 📱 Trình phát Player tối ưu hóa cho màn hình cảm ứng Android
+- **Thao tác chạm thông minh**:
+  - Chạm 1 lần để ẩn/hiện thanh điều khiển mượt mà.
+  - Chạm đúp bên trái màn hình: Tua lùi 10 giây (kèm rung haptic + toast).
+  - Chạm đúp bên phải màn hình: Tua tới 10 giây.
+  - Chạm đúp ở giữa màn hình: Tạm dừng / Tiếp tục phát.
+- **Thanh tua thời gian (Seekbar) phóng to**: Chiều cao vùng chạm 42px, chấm tròn chỉ báo 12px giúp thao tác ngón tay kéo tua cực kỳ chính xác.
+- **Thao tác tập nhanh**: Nút "Chọn tập" và "Tập trước / Tập sau" ngay trên giao diện điều khiển.
+- **Xoay ngang màn hình chuẩn Native**:
+  - Hỗ trợ xoay ngang mượt mà thông qua API điều hướng màn hình của hệ điều hành.
+  - Khi xoay ngang có thanh Header đầy đủ: **Nút Back góc trái (`<`)**, tên phim, tập phim, nút chọn tập và nút thu nhỏ.
+- **Cử chỉ vuốt mép Back Android**:
+  - Chừa khoảng cách mép màn hình (< 28px) tránh bắt nhầm thao tác tua phim, hỗ trợ cử chỉ vuốt cạnh mép của Android 100%.
+  - Cơ chế **"Vuốt lần nữa để thoát" (Double-back to exit)**: Ngăn chặn việc vô tình chạm mép làm tắt ứng dụng khi đang ở trang chủ; khi thoát sẽ thu nhỏ ứng dụng xuống nền thay vì đóng đột ngột.
 
-## 仿冒提醒
+---
 
-> 🚫 **已发现的恶意修改版**：[`hichuv` 仓库](https://github.com/hichuv)
->
-> 该仓库与本项目无关，是在旧版本源码基础上擅自加入**卡密验证、VIP 付费解锁**等变现功能的修改版，
-> 代码改动不透明、安全性无法验证。**请勿下载、勿注册、勿付费**；如已安装，建议立即卸载，改用官方 Release 包安装。
->
-> 本项目**从未、也不会**加入任何卡密 / VIP / 付费解锁 / 广告功能。如果你遇到的「HGhubX」要求输入卡密或付费开通，那一定不是官方版本。
+## 🛠️ Hướng dẫn cài đặt & Build APK
 
-## 免责声明
+### Yêu cầu môi trường
+- **Node.js**: v18+ & **pnpm**: v9+
+- **Rust toolchain**: `rustup target add aarch64-linux-android`
+- **JDK**: Java 17+
+- **Android SDK & NDK**: NDK r25+ (khuyên dùng NDK 27)
 
-- 本项目与内容提供方无任何关联，作者不参与内容的制作、上传与分发。
-- 本项目仅在上述官方渠道发布；任何第三方修改版（尤其是加卡密、VIP 变现的版本）均与作者无关，请自行甄别。
-- 使用者应自行遵守所在地法律法规；因使用本项目产生的任何后果由使用者自行承担。
-- 若相关权利方认为本项目存在侵权，请通过 Issue 联系，我们会及时处理。
+### 1. Cài đặt dependencies
+```sh
+pnpm install
+```
 
-## 升级兼容
+### 2. Kiểm tra & Build Web Frontend
+```sh
+pnpm build
+```
 
-- 本地收藏、观看记录、偏好、切集迁移标记和主题使用 `hghubx_*` 存储键。首次启动时，当前 WebView 存储中的旧 `hghub_*` 数据会迁移到新键；已有新数据优先，确认写入成功后才清理对应旧键。写入失败时保留并读取旧数据，下次启动重试。此迁移针对同一存储空间，不会跨应用标识或跨浏览器配置目录读取其他安装的数据。
-- 环境变量统一使用 `HGHUBX_PROXY`、`HGHUBX_STRICT`、`HGHUBX_TEST_COVER_URL`、`HGHUBX_TEST_MEDIA_URL` 和 `HGHUBX_TEST_MEDIA_OUTPUT`。旧 `HGHUB_*` 名称继续兼容；新变量未设置时才回退旧变量，显式设置的新值（包括空值）优先。安全模式的命令行参数仍优先于环境变量。
-- 网络诊断中的显式代理字段统一为 `HGHUBX_PROXY`，展示兼容读取后的有效值并保持脱敏。
+### 3. Đóng gói file APK cho Android (arm64-v8a)
+```sh
+pnpm tauri android build --apk -t aarch64 -d
+```
+File APK sau khi build nằm tại:
+`src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk`
 
-## 工程入口
+### 4. Cài đặt trực tiếp qua ADB vào điện thoại
+```sh
+adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+```
 
-开发者和 coding agent 先读 [`AGENTS.md`](AGENTS.md)，再按
-[`docs/subsystems/`](docs/subsystems/README.md) 找到要修改的子系统；当前行为、验证命令和变更
-协议都以这两处为准。`make check` 是本地统一入口，GitHub Actions 是合并门禁和验证记录。
+---
 
-项目目录与依赖关系见 [`docs/architecture.md`](docs/architecture.md)：
+## ⚠️ Tuyên bố miễn trừ trách nhiệm (Disclaimer)
 
-| 目录 | 内容 |
-| --- | --- |
-| `src/app/` | 应用装配、页面栈、窗口壳与启动门 |
-| `src/features/` | 首页与 Feed、播放、账号、分类、发现、图文、搜索、设置 |
-| `src/tv/` | 独立 Android TV 版界面、遥控器焦点与本地搜索片库 |
-| `src/shared/` | IPC、共享状态、存储、自动选线、诊断与跨功能 UI |
-| `src/styles/`、`src/index.css` | 统一样式入口与样式文件 |
-| `src-tauri/src/` | Rust 的 API、网络、媒体、线路与平台实现 |
+- Dự án này là bản fork phục vụ mục đích **học tập, nghiên cứu kỹ thuật và trải nghiệm cá nhân**.
+- Ứng dụng không lưu trữ, không phân phối và không sở hữu bất kỳ nội dung âm thanh/video nào. Toàn bộ nội dung hiển thị đều lấy từ các nguồn công khai của bên thứ ba.
+- Vui lòng tuân thủ luật pháp hiện hành và tôn trọng quyền tác giả của các bên liên quan.
 
-## License
+---
 
-[PolyForm Noncommercial License 1.0.0](LICENSE) —— **仅限非商业用途**。
+## ⚖️ Giấy phép (License)
 
-- **允许**：个人学习、研究、自用、爱好项目，以及在非营利组织内部使用；可以自由修改、二次开发。
-- **禁止**：任何商业用途。包括但不限于打包出售、接入付费/会员/广告变现、作为收费服务或商业产品的一部分分发。
-- **保留声明**：分发本项目或其修改版时，必须附带本许可证全文（或上面的链接）以及 `Required Notice` 声明行。
+[PolyForm Noncommercial License 1.0.0](LICENSE) — **Chỉ dành cho mục đích phi thương mại**.

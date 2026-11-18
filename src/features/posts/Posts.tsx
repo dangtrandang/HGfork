@@ -36,13 +36,13 @@ export function PostsPage({ onBack, wide }: { onBack: () => void; wide: boolean 
     <div className="ios-page absolute inset-0 bg-bg flex flex-col">
       <div className="ios-subpage-header shrink-0" style={{ paddingTop: "var(--sat, 0px)" }}>
         <div className="ios-subpage-bar">
-          <Button aria-label="返回" onClick={onBack} className="ios-nav-btn"><IBack size={20} /></Button>
+          <Button aria-label="Quay lại" onClick={onBack} className="ios-nav-btn"><IBack size={20} /></Button>
           <span className="w-9 h-9 rounded-[12px] bg-pc text-on-pc flex items-center justify-center shrink-0"><IFlame size={18} strokeWidth={1.9} /></span>
           <div className="flex-1 min-w-0">
-            <h1 className="text-[17px] font-bold text-on leading-tight">吃瓜</h1>
-            <div role="status" className="text-[12px] text-mut leading-tight mt-0.5">{loading && !items.length ? "加载中…" : `已加载 ${items.length} 篇 · ${Math.max(page, 1)}/${Math.max(pages, 1)} 页`}</div>
+            <h1 className="text-[17px] font-bold text-on leading-tight">Bài viết hot</h1>
+            <div role="status" className="text-[12px] text-mut leading-tight mt-0.5">{loading && !items.length ? "Đang tải…" : `Đã tải ${items.length} bài · Trang ${Math.max(page, 1)}/${Math.max(pages, 1)}`}</div>
           </div>
-          <Button onClick={() => setSearching(true)} aria-label="搜索吃瓜" className="ios-nav-btn"><ISearch size={18} /></Button>
+          <Button onClick={() => setSearching(true)} aria-label="Tìm kiếm bài viết" className="ios-nav-btn"><ISearch size={18} /></Button>
         </div>
       </div>
       <div ref={scrollRef} aria-busy={loading} className="flex-1 scroll-y pt-3.5 pb-8">
@@ -50,28 +50,28 @@ export function PostsPage({ onBack, wide }: { onBack: () => void; wide: boolean 
           <FilteredContent items={items} scopeKey="posts">{visible => (
           <div className={`ios-media-grid ${wide ? "is-wide" : ""}`}>
             {visible.map((p) => (
-              <MediaCard key={p.id} title={p.title} cover={p.cover} subtitle={`${fmt(p.hot)} 次浏览`} onOpen={() => push({ kind: "post", id: p.id })} />
+              <MediaCard key={p.id} title={p.title} cover={p.cover} subtitle={`${fmt(p.hot)} lượt xem`} onOpen={() => push({ kind: "post", id: p.id })} />
             ))}
           </div>
           )}</FilteredContent>
         ) : loading ? (
           <div className="flex justify-center py-12"><Loader className="w-8 h-8 spinner" /></div>
         ) : err ? (
-          <Empty icon={<IFireF size={26} />} title="吃瓜内容加载失败" sub={err} action="重试" onAction={() => loadMore(true)} />
+          <Empty icon={<IFireF size={26} />} title="Tải bài viết thất bại" sub={err} action="Thử lại" onAction={() => loadMore(true)} />
         ) : (
-          <Empty icon={<IFireF size={26} />} title="暂无吃瓜内容" />
+          <Empty icon={<IFireF size={26} />} title="Chưa có bài viết nào" />
         )}
         <div ref={sentinel} className="h-10" />
         {err && items.length > 0 && (
           <div className="flex flex-wrap items-center justify-center gap-3 py-2 text-[13px] text-danger" role="alert">
-            <span>加载更多失败：{err}</span>
-            <Button disabled={loading} onClick={() => loadMore()} className="text-primary pressable">重试</Button>
+            <span>Tải thêm thất bại: {err}</span>
+            <Button disabled={loading} onClick={() => loadMore()} className="text-primary pressable">Thử lại</Button>
           </div>
         )}
-        {!loading && !err && items.length > 0 && page < pages && <Button onClick={() => loadMore()} className="w-full mt-3">加载更多</Button>}
+        {!loading && !err && items.length > 0 && page < pages && <Button onClick={() => loadMore()} className="w-full mt-3">Tải thêm</Button>}
         {loading && items.length > 0 && <div className="flex justify-center py-2"><Loader className="w-6 h-6 spinner" /></div>}
       </div>
-      {searching && <InplaceSearch kind="post" postLabel="吃瓜帖子" wide={wide} onClose={() => setSearching(false)} onOpenPost={(p) => push({ kind: "post", id: p.id })} />}
+      {searching && <InplaceSearch kind="post" postLabel="Bài viết" wide={wide} onClose={() => setSearching(false)} onOpenPost={(p) => push({ kind: "post", id: p.id })} />}
     </div>
   );
 }
@@ -105,7 +105,7 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
     const key = String(id);
     if (autoBackKey.current === key) return;
     autoBackKey.current = key;
-    toast("该内容命中屏蔽标签，已自动返回", "info");
+    toast("Nội dung thuộc thẻ đã chặn, đã tự động quay lại", "info");
     onBack();
   }, [active, filtering, currentPost, blocked, id, onBack, toast]);
   useEffect(() => { if (!allowed) { setTagMenu(false); setCommentsOpen(false); } }, [allowed]);
@@ -126,7 +126,7 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
   const safeHtml = useMemo(() => sanitizeHtml(content), [content, strictSecurity]);
   const openSafeLink = (url: string) => {
     api.openUrl(url).catch(() => {
-      copyText(url).then(() => toast("链接已复制", "ok")).catch(() => toast("复制失败", "info"));
+      copyText(url).then(() => toast("Đã sao chép liên kết", "ok")).catch(() => toast("Sao chép thất bại", "info"));
     });
   };
 
@@ -149,7 +149,7 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
         /* 旧接口返回直链时提供回退，不覆盖已经解析出的分段。 */
         if (p.video_url) { setSegs(previous => previous.length ? previous : [p.video_url!]); setPlay(true); }
       })
-      .catch((e) => { if (alive) setErr((e as Error).message || "加载失败"); });
+      .catch((e) => { if (alive) setErr((e as Error).message || "Tải thất bại"); });
     return () => { alive = false; };
   }, [id, reload, lineEpoch, accountScope]);
 
@@ -163,13 +163,13 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
         const list = (r?.videos || []).map((v) => v?.url || "").filter(Boolean);
         if (list.length) { setSegs(list); setPlay(true); }
       })
-      .catch(e => { if (alive) setMediaError(e instanceof Error ? e.message : "视频解析失败"); })
+      .catch(e => { if (alive) setMediaError(e instanceof Error ? e.message : "Xử lý video thất bại"); })
       .finally(() => { if (alive) setResolving(false); });
     return () => { alive = false; };
   }, [id, reload, mediaRetry, allowed, lineEpoch, accountScope]);
 
   // Keep blocked content out of the surface while the host navigates back.
-  if (currentPost && blocked) return <div className="absolute inset-0 flex items-center justify-center bg-bg" aria-label="正在返回">
+  if (currentPost && blocked) return <div className="absolute inset-0 flex items-center justify-center bg-bg" aria-label="Đang quay lại">
     <Loader className="w-8 h-8 spinner" />
   </div>;
 
@@ -177,20 +177,20 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
     <div className="ios-page absolute inset-0 bg-bg flex flex-col">
       <div className="ios-subpage-header shrink-0" style={{ paddingTop: isMobile ? "var(--sat, 0px)" : 0 }}>
         <div className="ios-subpage-bar">
-          <Button aria-label="返回" onClick={onBack} className="ios-nav-btn"><IBack size={20} /></Button>
-          <span className="text-[16px] font-bold text-on">吃瓜详情</span>
-          <Button disabled={!currentPost} onClick={() => { if (active && allowed) setTagMenu(true); }} className="ml-auto -mr-2 px-2.5 min-h-9 inline-flex items-center justify-end text-[13px] font-medium text-primary">不感兴趣</Button>
+          <Button aria-label="Quay lại" onClick={onBack} className="ios-nav-btn"><IBack size={20} /></Button>
+          <span className="text-[16px] font-bold text-on">Chi tiết bài viết</span>
+          <Button disabled={!currentPost} onClick={() => { if (active && allowed) setTagMenu(true); }} className="ml-auto -mr-2 px-2.5 min-h-9 inline-flex items-center justify-end text-[13px] font-medium text-primary">Không quan tâm</Button>
         </div>
       </div>
 
-      <div role="progressbar" aria-label="阅读进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readProgress} className="h-1 shrink-0 bg-s3 overflow-hidden"><div className="h-full bg-primary" style={{ width: `${readProgress}%` }} /></div>
+      <div role="progressbar" aria-label="Tiến độ đọc" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readProgress} className="h-1 shrink-0 bg-s3 overflow-hidden"><div className="h-full bg-primary" style={{ width: `${readProgress}%` }} /></div>
       <div ref={scrollRef} data-post-scroll className="flex-1 scroll-y pb-8 !px-0" onScroll={event => {
         const el = event.currentTarget;
         const range = el.scrollHeight - el.clientHeight;
         setReadProgress(range > 0 ? Math.round(el.scrollTop / range * 100) : 100);
       }}>
         {err ? (
-          <Empty icon={<IFireF size={26} />} title="加载失败" sub={err} action="重试" onAction={() => setReload(n => n + 1)} />
+          <Empty icon={<IFireF size={26} />} title="Tải thất bại" sub={err} action="Thử lại" onAction={() => setReload(n => n + 1)} />
         ) : !currentPost ? (
           <div className="flex justify-center py-12"><Loader className="w-8 h-8 spinner" /></div>
         ) : (
@@ -204,7 +204,7 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
                     if (seg < segs.length - 1) setSeg(seg + 1);
                   }} />
               ) : src ? (
-                <Button aria-label="播放视频" onClick={() => setPlay(true)} className="absolute inset-0">
+                <Button aria-label="Phát video" onClick={() => setPlay(true)} className="absolute inset-0">
                   <Img src={currentPost.cover} eager />
                     <span className="absolute inset-0 flex items-center justify-center">
                       <span className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center elev-2">
@@ -215,13 +215,13 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
               ) : (
                 <div className="absolute inset-0"><Img src={currentPost.cover} eager /></div>
               )}
-              {resolving && !src && <div className="absolute inset-0 flex items-center justify-center gap-3 pointer-events-none bg-black/40 text-white"><Loader label="正在解析视频" /><span>正在解析视频…</span></div>}
+              {resolving && !src && <div className="absolute inset-0 flex items-center justify-center gap-3 pointer-events-none bg-black/40 text-white"><Loader label="Đang tải video…" /><span>Đang tải video…</span></div>}
             </div>
-            {mediaError && !src && <div role="alert" className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 text-[13px] text-danger"><span>{mediaError}</span><Button disabled={resolving} onClick={() => setMediaRetry(n => n + 1)} className="text-primary">重新解析</Button></div>}
+            {mediaError && !src && <div role="alert" className="flex flex-wrap items-center justify-center gap-3 px-4 py-3 text-[13px] text-danger"><span>{mediaError}</span><Button disabled={resolving} onClick={() => setMediaRetry(n => n + 1)} className="text-primary">Tải lại</Button></div>}
               {segs.length > 1 && (
-                <div role="group" aria-label="视频分段" className="flex items-center gap-2 px-4 py-3 overflow-x-auto">
+                <div role="group" aria-label="Phần video" className="flex items-center gap-2 px-4 py-3 overflow-x-auto">
                   {segs.map((_, i) => (
-                    <Button aria-label={`第 ${i + 1} 段`} aria-pressed={i === seg} key={i} onClick={() => { setSeg(i); setPlay(true); }}
+                    <Button aria-label={`Phần ${i + 1}`} aria-pressed={i === seg} key={i} onClick={() => { setSeg(i); setPlay(true); }}
                       className="shrink-0 min-h-11 px-3 rounded-full text-[13px] font-semibold pressable"
                       style={i === seg
                         ? { background: "var(--p-primary)", color: "var(--p-on-primary)" }
@@ -256,23 +256,23 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
                   return <>
                     <Button aria-pressed={liked} disabled={likeBusy} onClick={() => {
                       void setLiked("post", id, 1, !liked)
-                        .then(() => toast(!liked ? "已加入喜欢" : "已取消喜欢", !liked ? "heart" : "info"))
-                        .catch(e => toast(e instanceof Error ? e.message : "操作失败", "info"));
+                        .then(() => toast(!liked ? "Đã thích" : "Đã bỏ thích", !liked ? "heart" : "info"))
+                        .catch(e => toast(e instanceof Error ? e.message : "Thao tác thất bại", "info"));
                     }} className="h-9 px-3.5 rounded-full bg-s2 flex items-center gap-1.5 text-[13px] text-on pressable">
                       {liked ? <IHeartF size={15} className="text-neon" /> : <IHeart size={15} />}
-                      <span>{likeCount > 0 ? fmt(likeCount) : "喜欢"}</span>
+                      <span>{likeCount > 0 ? fmt(likeCount) : "Thích"}</span>
                     </Button>
                     <Button aria-pressed={fav} disabled={favBusy} onClick={() => {
                       void setCollected("post", id, !fav)
-                        .then(() => toast(!fav ? "已收藏" : "已取消收藏", !fav ? "star" : "info"))
-                        .catch(e => toast(e instanceof Error ? e.message : "操作失败", "info"));
+                        .then(() => toast(!fav ? "Đã lưu vào tủ phim" : "Đã bỏ lưu", !fav ? "star" : "info"))
+                        .catch(e => toast(e instanceof Error ? e.message : "Thao tác thất bại", "info"));
                     }} className="h-9 px-3.5 rounded-full bg-s2 flex items-center gap-1.5 text-[13px] text-on pressable">
                       {fav ? <IStarF size={15} className="text-amber" /> : <IStar size={15} />}
-                      <span>{favCount > 0 ? fmt(favCount) : "收藏"}</span>
+                      <span>{favCount > 0 ? fmt(favCount) : "Lưu"}</span>
                     </Button>
                     <Button onClick={() => setCommentsOpen(true)} className="h-9 px-3.5 rounded-full bg-s2 flex items-center gap-1.5 text-[13px] text-on pressable">
                       <ICommentF size={14} />
-                      <span>{currentPost.counts?.comment ? fmt(currentPost.counts.comment) : "评论"}</span>
+                      <span>{currentPost.counts?.comment ? fmt(currentPost.counts.comment) : "Bình luận"}</span>
                     </Button>
                   </>;
                 })()}
@@ -291,7 +291,7 @@ export function PostDetail({ id, onBack, active = true }: { id: number; onBack: 
           <CommentsPanel videoId={id} ep={1} total={currentPost?.counts?.comment ?? 0} kind="post" onClose={() => setCommentsOpen(false)} />
         </div>
       </Sheet>
-      <TagBlockMenu open={tagMenu && active} tags={currentPost?.tags || []} onClose={() => setTagMenu(false)} onSettings={() => push({ kind: "settings", section: "内容偏好" })} />
+      <TagBlockMenu open={tagMenu && active} tags={currentPost?.tags || []} onClose={() => setTagMenu(false)} onSettings={() => push({ kind: "settings", section: "Bộ lọc nội dung" })} />
     </div>
   );
 }

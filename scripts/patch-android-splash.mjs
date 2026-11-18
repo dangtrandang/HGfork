@@ -143,10 +143,13 @@ class MainActivity : TauriActivity() {
 }`;
   const patchedActivity = `package com.hghubx.app
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -166,22 +169,62 @@ class MainActivity : TauriActivity() {
     return null
   }
 
+  private fun hookWebView(wv: WebView) {
+    if (webViewHooked) return
+    webViewHooked = true
+
+    wv.addJavascriptInterface(object {
+      @JavascriptInterface
+      fun setOrientation(landscape: Boolean) {
+        runOnUiThread {
+          requestedOrientation = if (landscape) {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+          } else {
+            ActivityInfo.SCREEN_ORIENTATION_USER
+          }
+        }
+      }
+
+      @JavascriptInterface
+      fun moveToBackground() {
+        runOnUiThread {
+          moveTaskToBack(true)
+        }
+      }
+    }, "AndroidApp")
+  }
+
   private fun pushInsets(content: View) {
     val script = insetScript
     if (script.isEmpty()) return
     val wv = findWebView(content) ?: return
+    hookWebView(wv)
     wv.evaluateJavascript(script, null)
-    if (!webViewHooked) {
-      webViewHooked = true
-      for (delay in longArrayOf(150L, 600L, 1500L)) {
-        wv.postDelayed({ if (insetScript.isNotEmpty()) wv.evaluateJavascript(insetScript, null) }, delay)
-      }
+    for (delay in longArrayOf(150L, 600L, 1500L)) {
+      wv.postDelayed({ if (insetScript.isNotEmpty()) wv.evaluateJavascript(insetScript, null) }, delay)
     }
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
+
+    onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        val wv = findWebView(findViewById(android.R.id.content))
+        if (wv != null) {
+          wv.evaluateJavascript("(function(){ if (window.__HG_BACK) { return window.__HG_BACK(); } return false; })()") { res ->
+            val consumed = res == "true" || res == "\\"true\\""
+            if (!consumed) {
+              moveTaskToBack(true)
+            }
+          }
+        } else {
+          moveTaskToBack(true)
+        }
+      }
+    })
+
     val content = findViewById<View>(android.R.id.content) ?: return
     ViewCompat.setOnApplyWindowInsetsListener(content) { view, insets ->
       val bars = insets.getInsets(

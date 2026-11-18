@@ -22,8 +22,8 @@ export default function VideoDetailsPanel({ meta, videoId, episodeCount, related
 }) {
   return <div className="video-details-panel" data-video-details>
     {onClose && <div className="video-details-heading">
-      <h2>视频详情</h2>
-      <Button className="ios-icon-button" aria-label="关闭视频详情" onClick={onClose}><IClose size={18} /></Button>
+      <h2>Chi tiết phim</h2>
+      <Button className="ios-icon-button" aria-label="Đóng chi tiết phim" onClick={onClose}><IClose size={18} /></Button>
     </div>}
     <div className="video-details-scroll scroll-y">
       <div className="video-details-overview">
@@ -31,16 +31,16 @@ export default function VideoDetailsPanel({ meta, videoId, episodeCount, related
         <div className="video-details-copy">
           <h3>{meta.title}</h3>
           <div className="video-details-stats">
-            {!!meta.score && <span className="text-amber font-bold">{meta.score.toFixed(1)} 分</span>}
-            {episodeCount > 0 && <span>共 {episodeCount} 集</span>}
+            {!!meta.score && <span className="text-amber font-bold">{meta.score.toFixed(1)} Điểm</span>}
+            {episodeCount > 0 && <span>Tổng {episodeCount} tập</span>}
           </div>
-          <div className="video-details-stats"><span>点赞 {fmt(meta.like)}</span><span>收藏 {fmt(meta.collect)}</span><span>评论 {fmt(meta.comment)}</span></div>
+          <div className="video-details-stats"><span>Thích {fmt(meta.like)}</span><span>Lưu {fmt(meta.collect)}</span><span>Bình luận {fmt(meta.comment)}</span></div>
         </div>
       </div>
 
-      <section className="video-details-section" aria-label="标签导航">
-        <div className="video-details-section-heading"><h3>标签 · 点击查看同类</h3>
-          <Button className="video-detail-preferences" onClick={onPreferences}>调整内容偏好</Button>
+      <section className="video-details-section" aria-label="Điều hướng thẻ">
+        <div className="video-details-section-heading"><h3>Thẻ · Bấm để xem cùng thể loại</h3>
+          <Button className="video-detail-preferences" onClick={onPreferences}>Chỉnh bộ lọc nội dung</Button>
         </div>
         <ContentTags tags={meta.tags} onOpen={onTag} />
       </section>
@@ -48,21 +48,21 @@ export default function VideoDetailsPanel({ meta, videoId, episodeCount, related
       <Surface className="video-details-author">
         <Button onClick={onAuthor} disabled={meta.authorId <= 0} className="video-details-author-link">
           <Avatar size={36} name={meta.author} hue={220} />
-          <span className="min-w-0"><span className="block text-[14px] font-semibold truncate">{meta.author}</span><span className="text-[12px] text-mut">作者主页</span></span>
+          <span className="min-w-0"><span className="block text-[14px] font-semibold truncate">{meta.author}</span><span className="text-[12px] text-mut">Trang tác giả</span></span>
         </Button>
         {meta.authorId > 0 && <Button onClick={onFollow} disabled={followPending} aria-busy={followPending} aria-pressed={following}
           className={`video-details-follow ${following ? "bg-s3 text-mut" : "bg-primary text-on-primary"}`}>
-          {followPending ? "处理中…" : following ? "已关注" : "+ 关注"}
+          {followPending ? "Đang xử lý…" : following ? "Đã theo dõi" : "+ Theo dõi"}
         </Button>}
       </Surface>
 
       <section className="video-details-section">
-        <h3 className="video-details-section-heading">简介</h3>
-        <p className="video-details-description">{meta.desc || "暂无简介"}</p>
+        <h3 className="video-details-section-heading">Giới thiệu</h3>
+        <p className="video-details-description">{meta.desc || "Chưa có giới thiệu"}</p>
       </section>
 
       {related.length > 0 && <section className="video-details-section">
-        <h3 className="video-details-section-heading">相关推荐</h3>
+        <h3 className="video-details-section-heading">Đề xuất liên quan</h3>
         <FilteredContent items={related.slice(0, 12)} scopeKey={videoId}>{visible => <div className="scroll-x flex gap-2.5 snap-x">
           {visible.map(video => <RowCard key={video.id} v={video} onOpen={() => onRelated(video, visible)} />)}
         </div>}</FilteredContent>

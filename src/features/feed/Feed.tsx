@@ -545,31 +545,31 @@ export default function Feed({
 
   if (curId && mode === "home" && blocked) {
     return <div className="absolute inset-0 bg-black flex items-center justify-center" inert={!active || undefined} aria-hidden={!active || undefined}>
-      <Loader className="w-9 h-9 spinner" label="正在跳过内容" />
+      <Loader className="w-9 h-9 spinner" label="Đang bỏ qua nội dung" />
     </div>;
   }
 
   if (curId && filtering && !tagsReady && !tagErrors[tagKey]) {
     return <div className="absolute inset-0 bg-black flex items-center justify-center" inert={!active || undefined} aria-hidden={!active || undefined}>
-      <Loader className="w-9 h-9 spinner" label="正在加载内容" />
+      <Loader className="w-9 h-9 spinner" label="Đang tải nội dung" />
     </div>;
   }
 
   if (curId && filtering && !tagsReady && tagErrors[tagKey]) {
     return <div className="absolute inset-0 bg-black flex flex-col items-center justify-center gap-3" inert={!active || undefined} aria-hidden={!active || undefined}>
-      <span className="text-[13px] text-white/70">暂时无法加载内容</span>
+      <span className="text-[13px] text-white/70">Tạm thời không thể tải nội dung</span>
       <Button onClick={() => {
         setTagErrors(previous => { const next = { ...previous }; delete next[tagKey]; return next; });
         setProxyRetry(value => value + 1);
-      }} className="min-h-11 rounded-full bg-white/10 px-4 text-white">重试</Button>
+      }} className="min-h-11 rounded-full bg-white/10 px-4 text-white">Thử lại</Button>
     </div>;
   }
 
   if (!effectiveVideoIds.length) {
     return <div className="absolute inset-0 bg-black flex flex-col items-center justify-center gap-3" inert={!active || undefined} aria-hidden={!active || undefined}>
-      <span className="text-[14px] text-white/70">当前列表没有可播放内容</span>
+      <span className="text-[14px] text-white/70">Danh sách hiện tại không có nội dung để phát</span>
       <PreferenceStorageNotice className="mx-4 max-w-sm" />
-      {onBack && <Button onClick={onBack} className="min-h-11 rounded-full bg-white/10 px-5 text-white">返回</Button>}
+      {onBack && <Button onClick={onBack} className="min-h-11 rounded-full bg-white/10 px-5 text-white">Quay lại</Button>}
     </div>;
   }
 
@@ -634,7 +634,7 @@ export default function Feed({
                           setErr(m); setWaiting(false);
                           if (preferHevc && hevcUrl) {
                             setPreferHevc(false);
-                            toast("高清播不了，已切回标准", "info");
+                            toast("Không thể phát chất lượng cao, đã chuyển về tiêu chuẩn", "info");
                           }
                         }} />
                     </div>
@@ -697,7 +697,7 @@ export default function Feed({
       />
       {searching && active && (
         <InplaceSearch kind={kind} wide={isDesktop} onClose={() => setSearching(false)}
-          onOpenVideo={(v, list, kw) => store.push({ kind: "feed", videoIds: list.map(x => x.id), index: list.findIndex(x => x.id === v.id), title: kw ? `搜索 · ${kw}` : "搜索" })}
+          onOpenVideo={(v, list, kw) => store.push({ kind: "feed", videoIds: list.map(x => x.id), index: list.findIndex(x => x.id === v.id), title: kw ? `Tìm kiếm · ${kw}` : "Tìm kiếm" })}
           onOpenPost={(p) => store.push({ kind: "post", id: p.id })} />
       )}
       <TagBlockMenu open={active && tagMenu} tags={meta.tags} onClose={() => setTagMenu(false)} onSettings={openPreferences} />

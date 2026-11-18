@@ -59,6 +59,7 @@ export function useFeedTouchGestures({
   const gesture = useRef<{
     x: number; y: number; startY: number; t: number; timer: number | null;
     mode: "idle" | "hold" | "scrub" | "pan"; base: number; width: number; playing: boolean;
+    isEdge?: boolean;
     zone: HoldZone; speed: HoldSpeed | null; rect: HoldRect; rotation: HoldRotation;
   } | null>(null);
   /* 单击 / 双击判定：单击净屏，双击暂停 */
@@ -95,7 +96,12 @@ export function useFeedTouchGestures({
     const rotation: HoldRotation = rotated ? 90 : 0;
     const point = getHoldPoint(e.clientX, e.clientY, rect, rotation);
     pointersRef.current.set(e.pointerId, { x: point.x, y: point.y });
-    try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+
+    // Không bắt con trỏ nếu chạm sát mép màn hình (< 28px) để nhường cử chỉ vuốt back của hệ thống Android
+    const isEdge = e.pointerType === "touch" && (e.clientX < 28 || e.clientX > (window.innerWidth || 500) - 28);
+    if (!isEdge) {
+      try { el.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    }
     if (pointersRef.current.size === 2) {
       const pts = [...pointersRef.current.values()];
       const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
@@ -126,6 +132,7 @@ export function useFeedTouchGestures({
     const g = {
       x: point.x, y: point.y, startY: point.y, t: Date.now(), base: videoRef.current?.el()?.currentTime ?? playbackClock.getSnapshot(), width,
       mode: "idle" as "idle" | "hold" | "scrub" | "pan",
+      isEdge,
       zone, speed: null as HoldSpeed | null, rect, rotation,
       playing: videoRef.current?.el()?.paused === false,
       timer: window.setTimeout(() => {
@@ -181,6 +188,7 @@ export function useFeedTouchGestures({
 
     if (g.mode === "idle") {
       if (Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy)) {
+        if (g.isEdge) return; // Nhường cử chỉ vuốt mép back của Android
         if (g.timer) window.clearTimeout(g.timer);
         g.mode = "scrub";
         videoRef.current?.pause();
@@ -259,24 +267,48 @@ export function useFeedTouchGestures({
         if (swipeEp) { go(dir); return; }
       }
     }
-    if (!cancelled && g.mode === "idle" && Date.now() - g.t < 260) {
-      // 首击立即反馈；第二击恢复首击前的界面，再切换播放。
+    if (!cancelled && g.mode === "idle" && Date.now() - g.t < 280) {
       if (lastTapRef.current.timer) {
         window.clearTimeout(lastTapRef.current.timer);
         lastTapRef.current.timer = null;
-        setClean(lastTapRef.current.clean ?? false);
-        if (!isDesktop && fs) setIdle(lastTapRef.current.idle ?? false);
-        if (!isDesktop && fs && !lastTapRef.current.idle) arm();
-        videoRef.current?.toggle();
+
+        // Double tap: Trái = Tua lùi 10s | Phải = Tua tới 10s | Giữa = Tạm dừng / Phát
+        const tapX = g.x;
+        const totalW = g.width || 1;
+        const isLeft = tapX < totalW * 0.38;
+        const isRight = tapX > totalW * 0.62;
+
+        if (isLeft) {
+          const cur = videoRef.current?.el()?.currentTime ?? playbackClock.getSnapshot();
+          const target = Math.max(0, cur - 10);
+          videoRef.current?.seek(target, "mobile_gesture");
+          playbackClock.publish(target);
+          try { navigator.vibrate?.(15); } catch { /* ignore */ }
+          toast("-10 giây");
+        } else if (isRight) {
+          const cur = videoRef.current?.el()?.currentTime ?? playbackClock.getSnapshot();
+          const target = Math.min(duration || Infinity, cur + 10);
+          videoRef.current?.seek(target, "mobile_gesture");
+          playbackClock.publish(target);
+          try { navigator.vibrate?.(15); } catch { /* ignore */ }
+          toast("+10 giây");
+        } else {
+          videoRef.current?.toggle();
+        }
       } else {
         lastTapRef.current.clean = clean;
         lastTapRef.current.idle = idle;
-        setClean(!clean);
-        if (!isDesktop && fs) setIdle(!idle);
-        if (!isDesktop && fs && idle) arm();
         lastTapRef.current.timer = window.setTimeout(() => {
           lastTapRef.current.timer = null;
-        }, 230) as unknown as number;
+          // Single tap: Hiển thị / Ẩn thanh điều khiển
+          setClean(false);
+          if (!isDesktop && fs) {
+            setIdle(!idle);
+            if (idle) arm();
+          } else {
+            setClean(!clean);
+          }
+        }, 220) as unknown as number;
       }
     }
   };

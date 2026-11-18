@@ -10,6 +10,9 @@ export function useFsOrientation(fs: boolean, isDesktop: boolean, keepAlive: () 
     wasFs.current = fs;
     if (!entered || fs || isDesktop) return;
     if (active) keepAlive();
+    try {
+      (window as unknown as { AndroidApp?: { setOrientation: (l: boolean) => void } })?.AndroidApp?.setOrientation(false);
+    } catch { /* ignore */ }
     try { void invoke("set_orientation", { landscape: false }); } catch { /* ignore */ }
     try { screen.orientation?.unlock?.(); } catch { /* ignore */ }
   }, [fs, isDesktop, keepAlive, active]);

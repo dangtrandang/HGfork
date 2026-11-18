@@ -29,5 +29,8 @@ Thumbs.db
 # API
 docs/API.md
 
+# APK / Build artifacts
+*.apk
+
 # Agent instructions: AGENTS.md is tracked. Keep machine-local variants out.
 AGENTS.local.md

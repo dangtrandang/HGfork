@@ -294,7 +294,6 @@ export function useAccountData(initialGuest: GuestData, saveGuest: (data: GuestD
       return { ...data, likeEpisodes, likes: selected(data.likes, id, likeEpisodes.some(row => row.video_id === id)) };
     }), []);
   const setFollowing = useCallback((id: number, on: boolean) => {
-    if (!state.current!.user) return Promise.reject(new Error("请先登录"));
     return mutate(`follow:${id}`, auth => api.follow(id, on, auth), data => ({ ...data, follows: selected(data.follows, id, on) }));
   }, []);
   const currentGeneration = state.current.generation;

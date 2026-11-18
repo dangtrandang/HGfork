@@ -13,7 +13,7 @@ type Props = {
 type Layout = { width: number; height: number; left: number; top: number; targetWidth: number; targetHeight: number };
 
 export default function MobileHoldGuide({ open, onClose, target, bottomInset }: Props) {
-  return <GuideFrame open={open} onClose={onClose} label="视频长按操作提示">
+  return <GuideFrame open={open} onClose={onClose} label="Hướng dẫn cử chỉ">
     <GuideContent target={target} bottomInset={bottomInset} onClose={onClose} />
   </GuideFrame>;
 }
@@ -89,24 +89,24 @@ function GuideContent({ target, bottomInset, onClose }: Omit<Props, "open">) {
           width={bounds.size} height={bounds.size} fill="rgb(15 19 30 / .42)" stroke="white" strokeWidth="2" />
       </svg>
       <div className="mobile-hold-guide-heading">
-        <h2>长按，按你的位置操作</h2>
-        <p>按住约 0.4 秒，松开恢复原速度</p>
+        <h2>Nhấn giữ để điều khiển</h2>
+        <p>Nhấn giữ khoảng 0.4s, thả tay để về tốc độ chuẩn</p>
       </div>
       <div className="mobile-hold-guide-zone is-fast" style={point(.76, compact ? .34 : .28)}>
-        <strong>2×</strong><span>右上 · 按住加速</span>
+        <strong>2×</strong><span>Góc trên · Giữ để tăng tốc</span>
       </div>
       <div className="mobile-hold-guide-zone is-slow" style={point(.24, compact ? .66 : .65)}>
-        <strong>0.5×</strong><span>左下 · 按住减速</span>
+        <strong>0.5×</strong><span>Góc dưới · Giữ để giảm tốc</span>
       </div>
       <div className="mobile-hold-guide-zone is-menu" data-hold-guide-menu style={{ ...point(.5, .5), width: bounds.size, height: bounds.size }}>
         <span className="mobile-hold-guide-dot" aria-hidden="true" />
-        <strong>不感兴趣</strong><span>只在此处长按</span>
+        <strong>Không quan tâm</strong><span>Nhấn giữ tại đây</span>
       </div>
     </>}
     <div className="mobile-hold-guide-footer">
-      <p>长按加速 · 左右滑换挡 · 移入顶部标签锁定</p>
-      <p>双击暂停播放</p>
-      <Button className="mobile-hold-guide-done" onClick={onClose} data-autofocus>知道了</Button>
+      <p>Nhấn giữ để tăng tốc · Trượt sang ngang để chỉnh tốc độ</p>
+      <p>Chạm đúp bên trái: Tua -10s · Bên phải: Tua +10s · Giữa: Tạm dừng</p>
+      <Button className="mobile-hold-guide-done" onClick={onClose} data-autofocus>Đã hiểu</Button>
     </div>
   </div>;
 }

@@ -16,12 +16,12 @@ import { copyText } from "../../shared/lib/clipboard";
 import { Loader } from "../../shared/ui/ios/effects";
 import { IBack, IBoltF, IBroom, IChevR, ICompress, IHeart, IInfo, ILink, ILockF, IMoon, IRefresh, ISun, IVolMute } from "../../shared/ui/icons";
 
-const SETTING_GROUPS = ["外观", "播放", "内容偏好", "本地数据", "网络", "播放诊断", "其他"] as const;
+const SETTING_GROUPS = ["Giao diện", "Trình phát", "Bộ lọc nội dung", "Dữ liệu cục bộ", "Mạng & Đường truyền", "Chẩn đoán", "Thông tin khác"] as const;
 type SettingGroup = typeof SETTING_GROUPS[number];
 
 /* 独立设置页：线路 / 外观 / 播放 / 本地数据 / 清理缓存 / 网络诊断 / 关于
    入口：Windows 侧栏「设置」、Android「我的」右上角齿轮 */
-export default function Settings({ onBack, initialSection }: { onBack: () => void; wide: boolean; initialSection?: "内容偏好" }) {
+export default function Settings({ onBack, initialSection }: { onBack: () => void; wide: boolean; initialSection?: string }) {
   const { theme, themePreference, setTheme, favs, history, muteOnStartup, setMuteOnStartup, preferHevc, setPreferHevc, fsIdleSecs, setFsIdleSecs, strictSecurity, strictSecurityReady, securityPending, cliRelaxed, setStrictSecurity, toast } = useStore();
   const [about, setAbout] = useState(false);
   const [agreementOpen, setAgreementOpen] = useState(false);
@@ -42,12 +42,13 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
   const [diagnosing, setDiagnosing] = useState(false);
   const [diagReport, setDiagReport] = useState<string | null>(null);
   const [copyingReport, setCopyingReport] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Set<SettingGroup>>(() => new Set(initialSection ? [initialSection] : []));
+  const [openGroups, setOpenGroups] = useState<Set<SettingGroup>>(() => new Set());
   const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!initialSection) return;
+    const resolvedSection = initialSection === "内容偏好" ? "Bộ lọc nội dung" : initialSection;
     const frame = requestAnimationFrame(() => {
-      const target = contentRef.current?.querySelector<HTMLElement>(`#settings-${initialSection}`);
+      const target = contentRef.current?.querySelector<HTMLElement>(`#settings-${resolvedSection}`);
       target?.scrollIntoView({ block: "start", behavior: "instant" });
       target?.querySelector<HTMLElement>(".ios-settings-trigger")?.focus({ preventScroll: true });
     });
@@ -62,7 +63,7 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
 
   useEffect(() => { void initPlaybackLog(); }, []);
 
-  const readLine = () => { api.lineState().then((state) => { setLineBase(state.base); setLineError(""); }).catch(() => setLineError("线路读取失败，点击重新选择")); };
+  const readLine = () => { api.lineState().then((state) => { setLineBase(state.base); setLineError(""); }).catch(() => setLineError("Tải đường truyền thất bại, bấm để chọn lại")); };
   useEffect(() => {
     const sync = () => { readLine(); setAutoLineOn(autoLineEnabled()); };
     sync();
@@ -80,27 +81,23 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
     try {
       const info = await api.checkUpdate();
       if (info.has_update) setUpdate(info);
-      else toast(`已是最新版本 v${info.current}`, "ok");
+      else toast(`Đã là phiên bản mới nhất v${info.current}`, "ok");
     } catch (e) {
-      toast((e as Error).message || "检查更新失败", "info");
+      toast((e as Error).message || "Kiểm tra cập nhật thất bại", "info");
     } finally {
       setChecking(false);
     }
   };
-  /** 更新：用系统浏览器打开下载页，由系统/浏览器完成下载与安装。
-   *
-   * 不再自己下载 APK 并调安装器 —— 那条路在安卓上要额外过 FileProvider
-   * 与「安装未知应用」授权，失败点多，体验并不比浏览器好。
-   */
+
   const doUpdate = async () => {
     if (!update) return;
-    setUpdating("打开中…");
+    setUpdating("Đang mở…");
     try {
       await api.openUrl(update.url);
     } catch (e) {
       await copyText(update.url)
-        .then(() => toast("下载地址已复制，可在浏览器粘贴打开", "ok"))
-        .catch(() => toast((e as Error).message || "打开失败", "info"));
+        .then(() => toast("Đã sao chép link tải, có thể dán vào trình duyệt", "ok"))
+        .catch(() => toast((e as Error).message || "Mở link thất bại", "info"));
     } finally {
       setUpdating("");
     }
@@ -110,23 +107,23 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
     <div className="ios-page ios-settings-page absolute inset-0 bg-bg flex flex-col">
       <div data-settings-header className="ios-settings-header shrink-0">
         <div className="ios-settings-column">
-          <Button onClick={onBack} aria-label="返回" className="ios-icon-button"><IBack size={20} /></Button>
+          <Button onClick={onBack} aria-label="Quay lại" className="ios-icon-button"><IBack size={20} /></Button>
         </div>
       </div>
       <div data-settings-scroll className="ios-page-body flex-1 min-h-0 scroll-y">
         <div ref={contentRef} className="ios-settings-column ios-settings-content">
           <div className="pt-1 pb-4">
-            <h1 className="ios-page-title text-on">设置</h1>
+            <h1 className="ios-page-title text-on">Cài đặt</h1>
           </div>
-          {section("外观", <>
+          {section("Giao diện", <>
             <div className="ios-appearance-row items-center">
               <span className="ios-setting-icon">{themePreference === "system" ? <IRefresh size={16} /> : theme === "dark" ? <IMoon size={16} /> : <ISun size={16} />}</span>
               <div className="flex-1">
-                <div className="text-[14px] text-on">外观</div>
-                <div className="text-[12px] text-mut">{themePreference === "system" ? `跟随系统（当前${theme === "dark" ? "深色" : "浅色"}）` : theme === "dark" ? "深色外观" : "浅色外观"}</div>
+                <div className="text-[14px] text-on">Giao diện</div>
+                <div className="text-[12px] text-mut">{themePreference === "system" ? `Theo hệ thống (hiện đang ${theme === "dark" ? "Tối" : "Sáng"})` : theme === "dark" ? "Chủ đề Tối" : "Chủ đề Sáng"}</div>
               </div>
-              <SegmentedControl className="ios-appearance-picker" aria-label="外观模式" activeIndex={(["system", "light", "dark"] as const).indexOf(themePreference)}>
-                {([['system', '跟随'], ['light', '浅色'], ['dark', '深色']] as const).map(([value, label]) => (
+              <SegmentedControl className="ios-appearance-picker" aria-label="Chế độ giao diện" activeIndex={(["system", "light", "dark"] as const).indexOf(themePreference)}>
+                {([['system', 'Hệ thống'], ['light', 'Sáng'], ['dark', 'Tối']] as const).map(([value, label]) => (
                   <Button key={value} type="button" aria-pressed={themePreference === value}
                     onClick={() => setTheme(value)}>
                     {label}
@@ -136,86 +133,86 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
             </div>
           </>)}
 
-          {section("播放", <>
+          {section("Trình phát", <>
             <div className="ios-settings-row">
               <span className="ios-setting-icon"><IVolMute size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">启动时静音</div>
-                <div className="text-[12px] text-mut">默认开启，每次启动均静音；关闭后记住上次静音状态。下次启动生效。</div>
+                <div className="text-[14px] text-on">Tắt tiếng khi khởi động</div>
+                <div className="text-[12px] text-mut">Mặc định bật, luôn tắt âm thanh khi mở app. Bật để tránh phát âm thanh bất ngờ.</div>
               </div>
-              <Toggle desktop on={muteOnStartup} onChange={setMuteOnStartup} label="启动时静音" />
+              <Toggle desktop on={muteOnStartup} onChange={setMuteOnStartup} label="Tắt tiếng khi khởi động" />
             </div>
             <div className="ios-settings-row">
               <span className="ios-setting-icon"><IBoltF size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">优先高清</div>
-                <div className="text-[12px] text-mut">有高清就用 HEVC，播不了会自动切回标准</div>
+                <div className="text-[14px] text-on">Ưu tiên chất lượng cao HEVC</div>
+                <div className="text-[12px] text-mut">Tự động dùng luồng HEVC nếu có, nếu không sẽ dùng luồng tiêu chuẩn</div>
               </div>
-              <Toggle desktop on={preferHevc} onChange={setPreferHevc} label="优先高清" />
+              <Toggle desktop on={preferHevc} onChange={setPreferHevc} label="Ưu tiên chất lượng cao" />
             </div>
             {isMobile && <div className="ios-settings-row flex-wrap">
               <span className="ios-setting-icon"><ICompress size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">全屏无操作自动隐藏控件</div>
-                <div className="text-[12px] text-mut">全屏播放时控件闲置后自动隐藏，单击画面可再显示</div>
+                <div className="text-[14px] text-on">Tự ẩn thanh điều khiển khi rảnh tay</div>
+                <div className="text-[12px] text-mut">Khi xem video, thanh điều khiển sẽ tự ẩn sau số giây chọn bên dưới</div>
               </div>
-              <SegmentedControl className="w-full" aria-label="全屏无操作自动隐藏控件" activeIndex={[0, 3, 5, 10].indexOf(fsIdleSecs)}>
-                {([[0, "关"], [3, "3秒"], [5, "5秒"], [10, "10秒"]] as const).map(([secs, label]) => (
+              <SegmentedControl className="w-full" aria-label="Tự ẩn thanh điều khiển" activeIndex={[0, 3, 5, 10].indexOf(fsIdleSecs)}>
+                {([[0, "Tắt"], [3, "3s"], [5, "5s"], [10, "10s"]] as const).map(([secs, label]) => (
                   <Button key={secs} type="button" aria-pressed={fsIdleSecs === secs} onClick={() => setFsIdleSecs(secs)}>{label}</Button>
                 ))}
               </SegmentedControl>
             </div>}
           </>)}
 
-          {section("内容偏好", <ContentPreferencesSettings />)}
+          {section("Bộ lọc nội dung", <ContentPreferencesSettings />)}
 
-          {section("本地数据", <>
+          {section("Dữ liệu cục bộ", <>
             <div className="ios-settings-row">
               <span className="ios-setting-icon"><IHeart size={16} /></span>
               <div className="flex-1">
-                <div className="text-[14px] text-on">本地片库</div>
-                <div className="text-[12px] text-mut">{favs.length} 部收藏 · {history.length} 条观看记录</div>
+                <div className="text-[14px] text-on">Tủ phim máy này</div>
+                <div className="text-[12px] text-mut">{favs.length} phim đã lưu · {history.length} lịch sử xem</div>
               </div>
             </div>
             <Button onClick={() => { setClearError(""); setClearOpen(true); }} className="ios-settings-row text-left pressable">
               <span className="ios-setting-icon"><IBroom size={16} /></span>
               <div className="flex-1">
-                <div className="text-[14px] text-on">清理缓存</div>
+                <div className="text-[14px] text-on">Dọn dẹp bộ nhớ đệm (Cache)</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
           </>)}
 
-          {section("网络", <>
+          {section("Mạng & Đường truyền", <>
             <ProxySettings />
             <Button onClick={() => setLineOpen(true)} className="ios-settings-row text-left pressable">
               <span className="ios-setting-icon"><IBoltF size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">播放源</div>
-                <div className="text-[12px] text-mut truncate">{lineError || (lineBase ? hostOf(lineBase) : "读取中…")}</div>
+                <div className="text-[14px] text-on">Đường truyền phát</div>
+                <div className="text-[12px] text-mut truncate">{lineError || (lineBase ? hostOf(lineBase) : "Đang kiểm tra…")}</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
             <div className="ios-settings-row">
               <span className="ios-setting-icon"><IRefresh size={15} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">自动选择线路</div>
-                <div className="text-[12px] text-mut">主站不可用时检测已发布镜像；关闭后保留手动选择</div>
+                <div className="text-[14px] text-on">Tự động chọn đường truyền</div>
+                <div className="text-[12px] text-mut">Tự động chuyển sang mirror nhanh nhất khi đường truyền chính chậm hoặc lỗi</div>
               </div>
-              <Toggle desktop label="自动选择线路" on={autoLineOn} onChange={(on) => {
-                void setAutoLine(on).catch(() => toast("自动选线暂停失败，请重试", "info"));
+              <Toggle desktop label="Tự động chọn đường truyền" on={autoLineOn} onChange={(on) => {
+                void setAutoLine(on).catch(() => toast("Không thể thay đổi tự động chọn đường truyền", "info"));
                 setAutoLineOn(on);
-                toast(on ? "已开启自动选择线路" : "已关闭自动选线，可手动选择播放源", "info");
+                toast(on ? "Đã bật tự động chọn đường truyền" : "Đã tắt tự động chọn đường truyền", "info");
               }} />
             </div>
             <div className="ios-settings-row">
               <span className="ios-setting-icon"><ILockF size={15} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">严格安全模式</div>
+                <div className="text-[14px] text-on">Chế độ bảo mật nghiêm ngặt</div>
                 <div className="text-[12px] text-mut">
                   {cliRelaxed
-                    ? "已由启动参数 --no-strict 切换为兼容模式；可手动重新开启"
-                    : "默认开启，防上游投毒与内网探测；若导致正文或特殊代理异常可关闭（或用 --no-strict 启动）"}
+                    ? "Đang chạy ở chế độ tương thích (--no-strict)"
+                    : "Mặc định bật: Chặn chuyển hướng và bảo vệ mạng cục bộ"}
                 </div>
               </div>
               <Toggle desktop
@@ -223,18 +220,16 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
                 disabled={!strictSecurityReady || securityPending}
                 onChange={(on) => {
                   void setStrictSecurity(on).then(() => {
-                    toast(on ? "已开启严格安全模式" : "已切换为兼容模式（关闭激进清洗与守卫）", "info");
-                  }).catch(() => toast("安全设置保存失败，已保持原模式", "info"));
+                    toast(on ? "Đã bật chế độ bảo mật nghiêm ngặt" : "Đã chuyển sang chế độ tương thích", "info");
+                  }).catch(() => toast("Lưu cài đặt bảo mật thất bại", "info"));
                 }}
-                label="严格安全模式"
+                label="Chế độ bảo mật nghiêm ngặt"
               />
             </div>
-            {/* 打不开时先点这里：把 DNS / 代理 / HTTP 结果复制给维护者 */}
             <Button disabled={diagnosing} onClick={async () => {
               setDiagnosing(true);
               try {
                 const diag = await api.netDiag();
-                // 落盘走原始 JSON（便于脚本统计），复制给对方的是分段可读报告。
                 logLine(`[net_diag] ${JSON.stringify(diag)}`);
                 const http = (diag.http ?? {}) as { ms?: number; status?: number };
                 const dns = (diag.dns ?? {}) as { count?: number; has_fake_ip?: boolean };
@@ -248,170 +243,150 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
                 const report = formatNetDiag(diag);
                 try {
                   await copyText(report);
-                  toast(`诊断已复制 · ${shortVerdict(diag)}`, "ok");
+                  toast(`Đã chẩn đoán xong · ${shortVerdict(diag)}`, "ok");
                 } catch {
                   setDiagReport(report);
-                  toast("诊断已完成，复制失败，可在报告中重试", "info");
+                  toast("Chẩn đoán hoàn tất, có thể xem báo cáo bên dưới", "info");
                 }
               } catch (e) {
-                const detail = e instanceof Error ? e.message : typeof e === "string" ? e : "请稍后重试";
-                toast(`网络诊断失败：${detail}`, "info");
+                const detail = e instanceof Error ? e.message : typeof e === "string" ? e : "Vui lòng thử lại sau";
+                toast(`Chẩn đoán mạng thất bại: ${detail}`, "info");
               } finally {
                 setDiagnosing(false);
               }
             }} className="ios-settings-row text-left pressable disabled:opacity-60">
               <span className="ios-setting-icon"><ILink size={16} /></span>
               <div className="flex-1">
-                <div className="text-[14px] text-on">{diagnosing ? "正在诊断…" : "网络诊断"}</div>
-                <div className="text-[12px] text-mut">DNS / TCP / 系统代理 / 官网连通性，一键复制带结论的报告</div>
+                <div className="text-[14px] text-on">{diagnosing ? "Đang chẩn đoán…" : "Chẩn đoán mạng"}</div>
+                <div className="text-[12px] text-mut">Kiểm tra DNS / TCP / Proxy / Tốc độ kết nối tới server</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
           </>)}
 
-          {section("播放诊断", <>
+          {section("Chẩn đoán", <>
             <div className="ios-settings-row">
               <span className="ios-setting-icon"><IInfo size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">播放诊断日志</div>
-                <div className="text-[12px] text-mut">版本、平台、当前线路和播放失败原因始终记录；开关只额外记录拖动与缓冲细节</div>
+                <div className="text-[14px] text-on">Nhật ký phát video</div>
+                <div className="text-[12px] text-mut">Ghi lại thông tin lỗi và hiệu suất stream video để xử lý sự cố</div>
                 {playbackLog.error && <div role="alert" className="text-[12px] text-danger">{playbackLog.error}</div>}
               </div>
-              <Toggle desktop label="播放诊断日志" on={playbackLog.enabled} disabled={!playbackLog.ready || playbackLog.pending}
-                onChange={(on) => { void setPlaybackLog(on).then(() => toast(on ? "已开启播放诊断，请复现问题" : "已关闭播放诊断，已有日志保留", "ok")).catch(() => toast("日志设置保存失败，请重试", "info")); }} />
+              <Toggle desktop label="Nhật ký phát video" on={playbackLog.enabled} disabled={!playbackLog.ready || playbackLog.pending}
+                onChange={(on) => { void setPlaybackLog(on).then(() => toast(on ? "Đã bật nhật ký chẩn đoán" : "Đã tắt nhật ký chẩn đoán", "ok")).catch(() => toast("Không thể lưu cài đặt nhật ký", "info")); }} />
             </div>
             <Button disabled={!playbackLog.ready || playbackLog.pending || copyingLog} onClick={async () => {
               setCopyingLog(true);
-              try { await copyPlaybackLog(); toast("播放诊断日志已复制", "ok"); }
-              catch (e) { toast((e as Error).message || "复制日志失败", "info"); }
+              try { await copyPlaybackLog(); toast("Đã sao chép nhật ký chẩn đoán", "ok"); }
+              catch (e) { toast((e as Error).message || "Sao chép nhật ký thất bại", "info"); }
               finally { setCopyingLog(false); }
             }} className="ios-settings-row text-left pressable disabled:opacity-60">
               <span className="ios-setting-icon"><ILink size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">{copyingLog ? "正在复制…" : "复制播放诊断日志"}</div>
-                <div className="text-[12px] text-mut">含版本、平台、当前线路和播放失败原因</div>
+                <div className="text-[14px] text-on">{copyingLog ? "Đang sao chép…" : "Sao chép nhật ký chẩn đoán"}</div>
+                <div className="text-[12px] text-mut">Bao gồm phiên bản, nền tảng, đường truyền và mã lỗi video</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
-            {playbackLog.path && <details className="ios-settings-log-path text-[12px] text-mut"><summary className="cursor-pointer py-3">查看日志保存位置</summary><p className="break-all select-text pb-3">{playbackLog.path}</p></details>}
+            {playbackLog.path && <details className="ios-settings-log-path text-[12px] text-mut"><summary className="cursor-pointer py-3">Vị trí lưu nhật ký</summary><p className="break-all select-text pb-3">{playbackLog.path}</p></details>}
           </>)}
-          {section("其他", <>
+
+          {section("Thông tin khác", <>
             <Button onClick={checkUpdate} disabled={checking} className="ios-settings-row text-left pressable disabled:opacity-60">
-              <span className="ios-setting-icon">{checking ? <Loader label="正在检查更新" className="size-4" /> : <IRefresh size={16} />}</span>
+              <span className="ios-setting-icon">{checking ? <Loader label="Đang kiểm tra cập nhật" className="size-4" /> : <IRefresh size={16} />}</span>
               <div className="flex-1">
-                <div className="text-[14px] text-on">检查更新</div>
-                <div className="text-[12px] text-mut">{checking ? "检查中…" : `当前 v${APP_VERSION} · 对比 GitHub Release`}</div>
+                <div className="text-[14px] text-on">Kiểm tra bản cập nhật</div>
+                <div className="text-[12px] text-mut">{checking ? "Đang kiểm tra…" : `Phiên bản hiện tại v${APP_VERSION}`}</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
             <Button onClick={() => setAgreementOpen(true)} className="ios-settings-row text-left pressable">
               <span className="ios-setting-icon"><ILockF size={16} /></span>
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] text-on">使用条款与免责声明</div>
-                <div className="text-[12px] text-mut">查看完整协议与中国大陆下载传播限制</div>
+                <div className="text-[14px] text-on">Điều khoản sử dụng & Miễn trừ</div>
+                <div className="text-[12px] text-mut">Xem chi tiết các điều khoản sử dụng ứng dụng</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
             <Button onClick={() => setAbout(true)} className="ios-settings-row text-left pressable">
               <span className="ios-setting-icon"><IInfo size={16} /></span>
               <div className="flex-1">
-                <div className="text-[14px] text-on">关于 HGhubX</div>
-                <div className="text-[12px] text-mut">版本 {APP_VERSION} · 仅限非商业使用</div>
+                <div className="text-[14px] text-on">Thông tin ứng dụng</div>
+                <div className="text-[12px] text-mut">Phiên bản {APP_VERSION} · Bản phi thương mại</div>
               </div>
               <IChevR size={15} className="text-mut" />
             </Button>
           </>)}
 
-          <div className="text-center text-[12px] text-dim mt-5">HGhubX {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} 客户端</div>
+          <div className="text-center text-[12px] text-dim mt-5">HGhubX {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"}</div>
         </div>
       </div>
 
       <LinePicker open={lineOpen} onClose={() => { setLineOpen(false); readLine(); }} />
 
-      <Modal label="使用条款与免责声明" open={agreementOpen} onClose={() => setAgreementOpen(false)} width={680}>
+      <Modal label="Điều khoản sử dụng" open={agreementOpen} onClose={() => setAgreementOpen(false)} width={680}>
         <div className="flex flex-col min-h-0 max-h-[78dvh]">
           <div className="shrink-0 flex items-center justify-between gap-3 p-4 border-b border-s3">
-            <h2 className="text-[17px] font-bold text-on">使用条款与免责声明</h2>
-            <Button className="min-h-11 px-3 shrink-0" onClick={() => setAgreementOpen(false)}>关闭</Button>
+            <h2 className="text-[17px] font-bold text-on">Điều khoản sử dụng</h2>
+            <Button className="min-h-11 px-3 shrink-0" onClick={() => setAgreementOpen(false)}>Đóng</Button>
           </div>
-          <div className="flex-1 min-h-0 scroll-y p-4 select-text" tabIndex={0} aria-label="协议正文">
-            <p className="text-[12px] text-mut mb-4">协议版本 {USAGE_AGREEMENT_VERSION} · 查看协议不会更改本机确认记录</p>
+          <div className="flex-1 min-h-0 scroll-y p-4 select-text" tabIndex={0} aria-label="Nội dung điều khoản">
+            <p className="text-[12px] text-mut mb-4">Phiên bản điều khoản {USAGE_AGREEMENT_VERSION}</p>
             <UsageAgreementText />
           </div>
         </div>
       </Modal>
 
-      <Modal label="网络诊断报告" open={diagReport !== null} onClose={() => setDiagReport(null)} width={520}>
+      <Modal label="Báo cáo chẩn đoán mạng" open={diagReport !== null} onClose={() => setDiagReport(null)} width={520}>
         <div className="p-5">
-          <h2 className="text-[15px] font-bold text-on">网络诊断报告</h2>
-          <p className="text-[13px] text-mut mt-2">诊断已完成，自动复制未成功。可以重试复制，或在下方选择报告文字。</p>
-          <TextArea readOnly aria-label="网络诊断报告" value={diagReport ?? ""}
+          <h2 className="text-[15px] font-bold text-on">Báo cáo chẩn đoán mạng</h2>
+          <p className="text-[13px] text-mut mt-2">Chẩn đoán đã hoàn tất. Bạn có thể sao chép kết quả bên dưới để gửi phân tích.</p>
+          <TextArea readOnly aria-label="Báo cáo chẩn đoán mạng" value={diagReport ?? ""}
             className="w-full h-64 mt-3 p-3 rounded-(--r-sm) bg-s3 text-[12px] text-on resize-none" />
           <div className="flex gap-2 mt-4">
-            <Button onClick={() => setDiagReport(null)} className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on pressable">关闭</Button>
+            <Button onClick={() => setDiagReport(null)} className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on pressable">Đóng</Button>
             <Button disabled={copyingReport} onClick={async () => {
               if (diagReport === null) return;
               setCopyingReport(true);
-              try { await copyText(diagReport); toast("网络诊断报告已复制", "ok"); setDiagReport(null); }
-              catch { toast("复制失败，请选择报告文字手动复制", "info"); }
+              try { await copyText(diagReport); toast("Đã sao chép báo cáo", "ok"); setDiagReport(null); }
+              catch { toast("Sao chép thất bại, hãy bôi đen và sao chép thủ công", "info"); }
               finally { setCopyingReport(false); }
-            }} className="flex-1 h-9 rounded-(--r-ctl) brand-grad text-[14px] pressable disabled:opacity-60">{copyingReport ? "正在复制…" : "复制报告"}</Button>
+            }} className="flex-1 h-9 rounded-(--r-ctl) brand-grad text-[14px] pressable disabled:opacity-60">{copyingReport ? "Đang sao chép…" : "Sao chép báo cáo"}</Button>
           </div>
         </div>
       </Modal>
 
-      <Modal label="关于 HGhubX" open={about} onClose={() => setAbout(false)} width={392}>
+      <Modal label="Về HGhubX" open={about} onClose={() => setAbout(false)} width={392}>
         <div className="p-5">
           <div className="flex items-center gap-3">
             <span className="w-11 h-11 rounded-(--r-sm) brand-grad glow-neon flex items-center justify-center text-on-primary text-[17px] font-black">H</span>
             <div>
               <div className="text-[16px] font-bold text-on leading-tight">HGhubX</div>
-              <div className="text-[12px] text-mut mt-0.5">HGhubX 客户端 v{APP_VERSION}</div>
+              <div className="text-[12px] text-mut mt-0.5">Phiên bản v{APP_VERSION}</div>
             </div>
           </div>
 
           <p className="text-[13px] text-on/70 leading-relaxed mt-4">
-            基于 Rust + Tauri 2 构建的跨平台客户端，支持 Windows、macOS、Linux、Android 与 iOS。
+            Ứng dụng đa nền tảng xây dựng trên Rust + Tauri 2 + React, tối ưu cho Android và PC.
           </p>
 
           <Surface className="mt-4 rounded-(--r-sm) bg-s3/60 p-3 text-[12px] text-mut leading-relaxed">
-            仅限符合使用条款的成年人使用；禁止在中国大陆地区下载和传播本软件及相关资源。
-            第三方内容的权利属于各自权利人，访问内容不代表获得下载或传播授权。
+            Chỉ dành cho mục đích nghiên cứu học tập cá nhân. Toàn bộ nội dung âm thanh và video thuộc quyền sở hữu của các bên thứ ba.
           </Surface>
 
-          <div className="mt-4 divide-y divide-s3">
-            <Button aria-label="打开项目仓库" onClick={() => { api.openUrl("https://github.com/zxsos/HGhubX").catch(() => { copyText("https://github.com/zxsos/HGhubX").then(() => toast("仓库地址已复制", "ok")).catch(() => {}); }); }}
-              className="w-full flex items-center gap-2 py-2.5 text-left pressable">
-              <ILink size={15} className="text-mut" />
-              <span className="text-[13px] text-on/85">github.com/zxsos/HGhubX</span>
-              <span className="ml-auto text-[12px] text-primary">打开</span>
-            </Button>
-            <Button onClick={() => { copyText("https://huangguoai.com").then(() => toast("站点地址已复制", "ok")).catch(() => {}); }}
-              className="w-full flex items-center gap-2 py-2.5 text-left pressable">
-              <ILink size={15} className="text-mut" />
-              <span className="text-[13px] text-on/85">huangguoai.com</span>
-              <span className="ml-auto text-[12px] text-primary">复制</span>
-            </Button>
-            <div className="flex items-center gap-2 py-2.5">
-              <IInfo size={15} className="text-mut" />
-              <span className="text-[13px] text-on/85">PolyForm Noncommercial 1.0.0</span>
-              <span className="ml-auto text-[12px] text-mut">仅限非商业</span>
-            </div>
-          </div>
-
-          <Button onClick={() => setAbout(false)} className="mt-4 w-full h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on pressable">知道了</Button>
+          <Button onClick={() => setAbout(false)} className="mt-4 w-full h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on pressable">Đã hiểu</Button>
         </div>
       </Modal>
 
-      <Modal label="清理缓存" open={clearOpen} onClose={() => { if (!clearBusy.current) setClearOpen(false); }} width={330}>
+      <Modal label="Dọn dẹp bộ nhớ đệm" open={clearOpen} onClose={() => { if (!clearBusy.current) setClearOpen(false); }} width={330}>
         <div className="p-5">
-          <div className="text-[15px] font-bold text-on">清理缓存</div>
+          <div className="text-[15px] font-bold text-on">Dọn dẹp bộ nhớ đệm</div>
           <p className="text-[13px] text-mut leading-relaxed mt-2">
-            清除封面、播放列表、Key/分片缓存；Linux 桌面版还会选择性清理 WebKit HTTP/媒体磁盘缓存。登录、收藏、观看记录与本地设置都会保留。
+            Xóa ảnh bìa, phân đoạn video tạm thời trong máy để giải phóng dung lượng. Danh sách phim đã lưu và lịch sử xem vẫn được bảo toàn.
           </p>
           {clearError && <p role="alert" className="text-[13px] text-danger mt-3">{clearError}</p>}
           <div className="flex gap-2 mt-5">
-            <Button disabled={clearing} onClick={() => setClearOpen(false)} className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on/80 pressable">取消</Button>
+            <Button disabled={clearing} onClick={() => setClearOpen(false)} className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on/80 pressable">Hủy</Button>
             <Button disabled={clearing} onClick={async () => {
               if (clearBusy.current) return;
               clearBusy.current = true;
@@ -419,20 +394,20 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
               try {
                 const cleared = await api.clearCache();
                 setClearOpen(false);
-                toast(cleared.webCache ? "缓存已清理（含 WebKit 媒体缓存）" : "应用内缓存已清理", "ok");
+                toast(cleared.webCache ? "Đã dọn dẹp bộ nhớ đệm thành công" : "Đã dọn dẹp bộ nhớ đệm", "ok");
               } catch (error) {
-                setClearError(error instanceof Error ? error.message : String(error || "清理失败，请重试"));
+                setClearError(error instanceof Error ? error.message : String(error || "Dọn dẹp thất bại"));
               } finally { clearBusy.current = false; setClearing(false); }
             }} className="flex-1 h-9 rounded-(--r-ctl) bg-primary text-[14px] font-semibold text-on-primary pressable disabled:opacity-60">
-              {clearing ? "清理中…" : "确定清理"}
+              {clearing ? "Đang dọn dẹp…" : "Xác nhận dọn dẹp"}
             </Button>
           </div>
         </div>
       </Modal>
 
-      <Modal label="发现新版本" open={!!update?.has_update} onClose={() => setUpdate(null)} width={392}>
+      <Modal label="Có bản cập nhật mới" open={!!update?.has_update} onClose={() => setUpdate(null)} width={392}>
         <div className="p-5">
-          <div className="text-[16px] font-bold text-on">发现新版本</div>
+          <div className="text-[16px] font-bold text-on">Có bản cập nhật mới</div>
           <p className="text-[12px] text-mut mt-1.5">
             v{update?.current} → <b className="text-on">v{update?.latest}</b>
             {update?.published_at ? ` · ${update.published_at.slice(0, 10)}` : ""}
@@ -442,13 +417,13 @@ export default function Settings({ onBack, initialSection }: { onBack: () => voi
           )}
           <div className="flex gap-2 mt-4">
             <Button onClick={() => setUpdate(null)} disabled={!!updating}
-              className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on/80 pressable disabled:opacity-60">稍后</Button>
+              className="flex-1 h-9 rounded-(--r-ctl) bg-s3 text-[14px] text-on/80 pressable disabled:opacity-60">Để sau</Button>
             <Button onClick={() => void doUpdate()} disabled={!!updating}
               className="flex-1 h-9 rounded-(--r-ctl) bg-primary text-[14px] font-semibold text-on-primary pressable disabled:opacity-60">
-              {updating || "前往下载"}
+              {updating || "Tải về"}
             </Button>
           </div>
-          <details className="text-[12px] text-mut mt-2.5"><summary className="py-3 cursor-pointer">下载地址</summary><p className="break-all select-text">{update?.url}</p></details>
+          <details className="text-[12px] text-mut mt-2.5"><summary className="py-3 cursor-pointer">Link tải trực tiếp</summary><p className="break-all select-text">{update?.url}</p></details>
         </div>
       </Modal>
     </div>

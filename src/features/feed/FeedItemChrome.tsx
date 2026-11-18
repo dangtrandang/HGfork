@@ -146,12 +146,12 @@ export default function FeedItemChrome({
                   else setPortraitFit((f) => (f === "contain" ? "cover" : "contain"));
                 }} className="whitespace-nowrap flex items-center justify-center gap-1 min-h-0 h-[26px] px-3 rounded-full text-[12px] font-semibold pressable transition-colors duration-150"
                   style={{ color: "rgba(255,255,255,.9)" }}>
-                  {zoom.s > 1.05 ? `还原 ${zoom.s.toFixed(1)}x` : portraitFit === "contain" ? "铺满" : "适应"}
+                  {zoom.s > 1.05 ? `Đặt lại ${zoom.s.toFixed(1)}x` : portraitFit === "contain" ? "Lấp đầy" : "Vừa khung"}
                 </Button>
                 <Button type="button" onClick={() => enterFs(true)}
                   className="whitespace-nowrap flex items-center justify-center gap-1 min-h-0 h-[26px] px-3 rounded-full text-[12px] font-semibold pressable transition-colors duration-150"
                   style={{ color: "rgba(255,255,255,.9)" }}>
-                  <IExpand size={13} /><span>横屏</span>
+                  <IExpand size={13} /><span>Xoay ngang</span>
                 </Button>
               </>
             )}
@@ -159,7 +159,7 @@ export default function FeedItemChrome({
               <Button type="button" onClick={() => setZoom({ s: 1, x: 0, y: 0, g: false })}
                 className="whitespace-nowrap flex items-center justify-center gap-1 min-h-0 h-[26px] px-3 rounded-full text-[12px] font-semibold pressable transition-colors duration-150"
                 style={{ color: "rgba(255,255,255,.9)" }}>
-                还原 {zoom.s.toFixed(1)}x
+                Đặt lại {zoom.s.toFixed(1)}x
               </Button>
             )}
           </div>
@@ -171,35 +171,41 @@ export default function FeedItemChrome({
       {!fs && !clean && !isDesktop && (
         <div className="mobile-video-action-rail absolute z-30 flex flex-col items-center gap-[16px]"
           style={{ right: "calc(var(--sar, 0px) + 12px)", bottom: `calc(var(--sab, 0px) + ${bottomInset + 44}px)` }}>
+          {kind === "video" && episodes.length > 0 && (
+            <Button onClick={() => setPanel("episodes")} className="flex flex-col items-center gap-1 pressable" aria-label={`Chọn tập ${curEp}/${episodes.length}`}>
+              <IList size={26} className="hg-ink hg-ov-shadow" />
+              <span className="text-[12px] hg-ink-2 hg-ov-shadow tabular-nums">{curEp}/{episodes.length}</span>
+            </Button>
+          )}
           {episodes.length > 1 && (
-            <Button type="button" onClick={() => { setSwipeEp(!swipeEp); toast(swipeEp ? "上下划切集已关闭" : "上下划切集已开启"); }}
-              className="flex flex-col items-center gap-1 pressable" aria-pressed={swipeEp} aria-label="上下划切集开关">
+            <Button type="button" onClick={() => { setSwipeEp(!swipeEp); toast(swipeEp ? "Đã tắt vuốt chuyển tập" : "Đã bật vuốt chuyển tập"); }}
+              className="flex flex-col items-center gap-1 pressable" aria-pressed={swipeEp} aria-label="Bật tắt vuốt chuyển tập">
               <IVertSwap size={26} className={swipeEp ? "hg-gold hg-ov-shadow" : "hg-ink hg-ov-shadow"} />
-              <span className="text-[12px] hg-ink-2 hg-ov-shadow" style={{ color: swipeEp ? "#f3c969" : undefined }}>切集</span>
+              <span className="text-[12px] hg-ink-2 hg-ov-shadow" style={{ color: swipeEp ? "#f3c969" : undefined }}>Đổi tập</span>
             </Button>
           )}
           {hevcUrl && (
-            <Button type="button" onClick={() => { setPreferHevc(!preferHevc); toast(preferHevc ? "已切回标准画质" : "已切换高清 HEVC", "ok"); }}
-              className="flex flex-col items-center gap-1 pressable" aria-pressed={preferHevc} aria-label="画质切换">
-              <span className={`flex items-center justify-center h-[22px] min-w-[30px] px-1 rounded-md text-[12px] font-bold hg-ov-shadow ${preferHevc ? "bg-white text-[#191919]" : "hg-chip hg-ink-2"}`}>{preferHevc ? "HD" : "标清"}</span>
-              <span className="text-[12px] hg-ink-2 hg-ov-shadow" style={{ color: preferHevc ? "#fff" : undefined }}>{preferHevc ? "高清" : "标清"}</span>
+            <Button type="button" onClick={() => { setPreferHevc(!preferHevc); toast(preferHevc ? "Đã chuyển về chất lượng tiêu chuẩn" : "Đã chuyển sang chất lượng cao HEVC", "ok"); }}
+              className="flex flex-col items-center gap-1 pressable" aria-pressed={preferHevc} aria-label="Chuyển chất lượng">
+              <span className={`flex items-center justify-center h-[22px] min-w-[30px] px-1 rounded-md text-[12px] font-bold hg-ov-shadow ${preferHevc ? "bg-white text-[#191919]" : "hg-chip hg-ink-2"}`}>{preferHevc ? "HD" : "SD"}</span>
+              <span className="text-[12px] hg-ink-2 hg-ov-shadow" style={{ color: preferHevc ? "#fff" : undefined }}>{preferHevc ? "HD" : "SD"}</span>
             </Button>
           )}
-          <Button onClick={() => void onLike()} disabled={likePending} aria-busy={likePending} className="flex flex-col items-center gap-1 pressable" aria-pressed={liked} aria-label="点赞">
+          <Button onClick={() => void onLike()} disabled={likePending} aria-busy={likePending} className="flex flex-col items-center gap-1 pressable" aria-pressed={liked} aria-label="Thích">
             {liked ? <IHeartF size={27} className="text-neon" /> : <IHeart size={27} className="hg-ink hg-ov-shadow" />}
             <span className="text-[12px] text-white/90 tabular-nums">{fmt(likeCount)}</span>
           </Button>
-          <Button onClick={() => void onFav()} disabled={collectPending} aria-busy={collectPending} className="flex flex-col items-center gap-1 pressable" aria-pressed={collected} aria-label="收藏">
+          <Button onClick={() => void onFav()} disabled={collectPending} aria-busy={collectPending} className="flex flex-col items-center gap-1 pressable" aria-pressed={collected} aria-label="Lưu">
             {collected ? <IStarF size={27} className="hg-gold" /> : <IStar size={27} className="hg-ink hg-ov-shadow" />}
             <span className="text-[12px] text-white/90 tabular-nums">{fmt(collectCount)}</span>
           </Button>
-          <Button onClick={() => setPanel("comments")} className="flex flex-col items-center gap-1 pressable" aria-label={`评论 ${fmt(meta.comment)} 条`}>
+          <Button onClick={() => setPanel("comments")} className="flex flex-col items-center gap-1 pressable" aria-label={`Bình luận ${fmt(meta.comment)}`}>
             <ICommentF size={26} className="hg-ink hg-ov-shadow" />
             <span className="text-[12px] hg-ink-2 hg-ov-shadow tabular-nums">{fmt(meta.comment)}</span>
           </Button>
-          <Button onClick={() => enterFs(landscapeVideo)} className="flex flex-col items-center gap-1 pressable" aria-label="全屏">
+          <Button onClick={() => enterFs(landscapeVideo)} className="flex flex-col items-center gap-1 pressable" aria-label="Toàn màn hình">
             <IExpand size={26} className="hg-ink hg-ov-shadow" />
-            <span className="text-[12px] hg-ink-2 hg-ov-shadow">全屏</span>
+            <span className="text-[12px] hg-ink-2 hg-ov-shadow">Toàn màn hình</span>
           </Button>
         </div>
       )}
@@ -208,36 +214,36 @@ export default function FeedItemChrome({
       {!fs && !clean && isDesktop && (
         <div className="absolute z-20 flex flex-col items-center desktop-social">
           <div className="desktop-browse-inline">
-            <Button onClick={() => stepDir(-1)} disabled={!canStep(-1)} aria-label="上一个" title="上一个 ↑">
+            <Button onClick={() => stepDir(-1)} disabled={!canStep(-1)} aria-label="Trước" title="Trước ↑">
               <IChevronUp size={19} strokeWidth={1.8} />
             </Button>
-            <Button onClick={() => stepDir(1)} disabled={!canStep(1)} aria-label="下一个" title="下一个 ↓">
+            <Button onClick={() => stepDir(1)} disabled={!canStep(1)} aria-label="Sau" title="Sau ↓">
               <IChevronDown size={19} strokeWidth={1.8} />
             </Button>
             <small>{String(index + 1).padStart(2, "0")} / {String(effectiveLength).padStart(2, "0")}</small>
           </div>
 
-          <Button onClick={() => void onLike()} disabled={likePending} aria-busy={likePending} aria-label="点赞" className="flex flex-col items-center gap-1 pressable" aria-pressed={liked}>
+          <Button onClick={() => void onLike()} disabled={likePending} aria-busy={likePending} aria-label="Thích" className="flex flex-col items-center gap-1 pressable" aria-pressed={liked}>
             <span key={heartBurst} className={heartBurst ? "a-pop" : ""}>
               {liked ? <IHeartF size={30} className="text-neon" /> : <IHeart size={30} className="text-white tsh" />}
             </span>
             <span className="text-[12px] text-white/90 tabular-nums">{fmt(likeCount)}</span>
           </Button>
 
-          <Button onClick={() => setPanel("comments")} aria-label={`评论 ${fmt(meta.comment)} 条`} className="flex flex-col items-center gap-1 pressable">
+          <Button onClick={() => setPanel("comments")} aria-label={`Bình luận ${fmt(meta.comment)}`} className="flex flex-col items-center gap-1 pressable">
             <ICommentF size={27} className="text-white tsh" />
             <span className="text-[12px] text-white/90 tabular-nums">{fmt(meta.comment)}</span>
           </Button>
 
-          <Button onClick={() => void onFav()} disabled={collectPending} aria-busy={collectPending} aria-label="收藏" className="flex flex-col items-center gap-1 pressable" aria-pressed={collected}>
+          <Button onClick={() => void onFav()} disabled={collectPending} aria-busy={collectPending} aria-label="Lưu" className="flex flex-col items-center gap-1 pressable" aria-pressed={collected}>
             {collected ? <IStarF size={27} className="hg-gold" /> : <IStar size={27} className="hg-ink hg-ov-shadow" />}
             <span className="text-[12px] text-white/90 tabular-nums">{fmt(collectCount)}</span>
           </Button>
 
           {kind === "video" && (
-            <Button onClick={() => setPanel("episodes")} aria-label="选集" className="flex flex-col items-center gap-1 pressable">
+            <Button onClick={() => setPanel("episodes")} aria-label="Chọn tập" className="flex flex-col items-center gap-1 pressable">
               <IList size={26} className="text-white tsh" />
-              <span className="text-[12px] text-white/90">选集</span>
+              <span className="text-[12px] text-white/90">Chọn tập</span>
             </Button>
           )}
         </div>
@@ -251,27 +257,27 @@ export default function FeedItemChrome({
             {episodes.length > 0 && (
               <span className="shrink-0 px-1.5 py-px rounded-md text-[12px] font-bold text-white"
                 style={{ background: "rgba(255,255,255,.16)" }}>
-                第 {curEp}/{episodes.length} 集
+                Tập {curEp}/{episodes.length}
               </span>
             )}
             {hevcUrl && (
               <Button type="button" aria-pressed={preferHevc}
-                onClick={() => { setPreferHevc(!preferHevc); toast(preferHevc ? "已切回标准画质" : "已切换高清 HEVC", "ok"); }}
+                onClick={() => { setPreferHevc(!preferHevc); toast(preferHevc ? "Đã chuyển về chất lượng tiêu chuẩn" : "Đã chuyển sang chất lượng cao HEVC", "ok"); }}
                 className={`shrink-0 min-h-0 h-[18px] px-1.5 rounded-md text-[12px] font-bold flex items-center pressable transition-colors ${preferHevc ? "bg-white text-[#191919]" : "text-white border border-white/30"}`}>
-                {preferHevc ? "HD" : "标清"}
+                {preferHevc ? "HD" : "SD"}
               </Button>
             )}
             {!!meta.score && (
-              <span className="shrink-0 text-[12px] font-bold hg-gold hg-ov-shadow">{meta.score.toFixed(1)} 分</span>
+              <span className="shrink-0 text-[12px] font-bold hg-gold hg-ov-shadow">{meta.score.toFixed(1)} Điểm</span>
             )}
           </div>
 
           <p className="mt-1 text-[14px] leading-snug hg-ink-2 hg-ov-shadow clamp-2">{meta.title}</p>
 
-          <p className="mt-1 text-[12px] leading-relaxed hg-ink-4 clamp-1">{meta.desc || "暂无简介"}</p>
+          <p className="mt-1 text-[12px] leading-relaxed hg-ink-4 clamp-1">{meta.desc || "Chưa có giới thiệu"}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Button aria-label="视频详情" onClick={() => setPanel("detail")} className="min-h-11 px-4 rounded-full hg-chip text-[12px] inline-flex items-center gap-1">
-              详情与标签<IChevR size={13} />
+            <Button aria-label="Chi tiết video" onClick={() => setPanel("detail")} className="min-h-11 px-4 rounded-full hg-chip text-[12px] inline-flex items-center gap-1">
+              Chi tiết & Thẻ<IChevR size={13} />
             </Button>
           </div>
         </div>
@@ -287,27 +293,27 @@ export default function FeedItemChrome({
           </div>
           <div className="relative pt-1.5 pb-2.5">
             <div className="mobile-video-meta-copy flex flex-wrap items-center gap-2">
-              <Button aria-label="视频详情" onClick={() => setPanel("detail")}
+              <Button aria-label="Chi tiết video" onClick={() => setPanel("detail")}
                 className="min-h-11 flex items-center gap-0.5 text-[12px] font-medium hg-ink-3 hg-ov-shadow-strong pressable pointer-events-auto">
-                {kind === "post" ? "详情与标签" : `详情 · 第 ${curEp} 集`}<IChevR size={11} />
+                {kind === "post" ? "Chi tiết & Thẻ" : `Chi tiết · Tập ${curEp}`}<IChevR size={11} />
               </Button>
             </div>
-            {isActive && <div ref={barRef} className="mx-4 -mt-0.5 -mb-2.5 relative pointer-events-auto" style={{ height: 34, touchAction: "none" }}
+            {isActive && <div ref={barRef} className="mx-4 -mt-0.5 -mb-2.5 relative pointer-events-auto" style={{ height: 42, touchAction: "none" }}
               onPointerDown={onBarDown} onPointerMove={onBarMove} onPointerUp={(e) => onBarUp(e, false)} onPointerCancel={(e) => onBarUp(e, true)}>
-              {/* 轨道：几乎看不见，只暗示可拖动 */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] rounded-full" style={{ background: "rgba(255,255,255,.1)" }}>
+              {/* 轨道：Độ dày 4px và độ tương phản tốt hơn để dễ nhìn */}
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[4px] rounded-full" style={{ background: "rgba(255,255,255,.2)" }}>
                 <PlaybackProgress clock={playbackClock} duration={duration} preview={barPct} className="h-full rounded-full"
-                  style={{ background: "rgba(255,255,255,.26)", transition: barPct !== null ? "none" : "width .25s linear" }} />
+                  style={{ background: "rgba(255,255,255,.7)", transition: barPct !== null ? "none" : "width .25s linear" }} />
               </div>
-              {/* 进度点：整个进度条唯一的实心元素 */}
-              <PlaybackProgress clock={playbackClock} duration={duration} preview={barPct} position className="absolute top-1/2 w-[7px] h-[7px] rounded-full bg-white pointer-events-none"
+              {/* 进度点：Nút tròn 12px để ngón tay dễ chạm kéo */}
+              <PlaybackProgress clock={playbackClock} duration={duration} preview={barPct} position className="absolute top-1/2 w-[12px] h-[12px] rounded-full bg-white pointer-events-none"
                 style={{
                   transform: "translate(-50%, -50%)",
-                  boxShadow: "0 0 8px rgba(0,0,0,.55)",
+                  boxShadow: "0 0 8px rgba(0,0,0,.65)",
                   transition: barPct !== null ? "none" : "left .25s linear",
                 }} />
               {barPct !== null && (
-                <div className="absolute left-1/2 -translate-x-1/2 -top-6 px-2.5 py-1 rounded-md hg-chip-strong backdrop-blur-md text-[13px] font-bold tabular-nums whitespace-nowrap">
+                <div className="absolute left-1/2 -translate-x-1/2 -top-7 px-2.5 py-1 rounded-md hg-chip-strong backdrop-blur-md text-[13px] font-bold tabular-nums whitespace-nowrap">
                   {fmtTime(barPct * (duration || 0))}
                 </div>
               )}
@@ -342,9 +348,9 @@ export default function FeedItemChrome({
       {isActive && err && (
         <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
           <div className="rounded-xl p-5 flex flex-col items-center gap-3 text-[14px] hg-ink-2 pointer-events-auto" style={{ background: "rgba(0,0,0,.7)" }}>
-            <span>视频暂时无法加载</span>
+            <span>Không thể tải video</span>
             <span className="text-[12px] hg-ink-4 max-w-[240px] text-center break-all">{err}</span>
-            <Button className="hg-link text-[14px]" onClick={onRetryStream}>重试</Button>
+            <Button className="hg-link text-[14px]" onClick={onRetryStream}>Thử lại</Button>
           </div>
         </div>
       )}

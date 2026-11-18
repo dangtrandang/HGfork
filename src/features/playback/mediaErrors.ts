@@ -3,16 +3,16 @@ import { isIos, isLinux } from "../../shared/api/api";
 export function mediaErrorMessage(error: MediaError | null): string {
   switch (error?.code) {
     case 2:
-      return "网络错误，视频加载失败，请检查网络后重试";
+      return "Lỗi mạng, tải video thất bại, vui lòng kiểm tra kết nối";
     case 3:
-      return "视频解码失败，请重试";
+      return "Giải mã video thất bại, vui lòng thử lại";
     case 4:
       return isLinux
-        ? "当前系统缺少 H.264/AAC 解码器，请安装 gstreamer1.0-libav 和 gstreamer1.0-plugins-bad 后重试"
+        ? "Hệ thống thiếu codec H.264/AAC, vui lòng cài đặt gstreamer1.0-libav và gstreamer1.0-plugins-bad"
         : isIos
-          ? "视频资源加载失败或格式不受支持，请重试"
-          : "当前视频格式不受支持";
+          ? "Tải video thất bại hoặc định dạng không được hỗ trợ"
+          : "Định dạng video không được hỗ trợ";
     default:
-      return "视频加载失败，请重试";
+      return "Tải video thất bại, vui lòng thử lại";
   }
 }

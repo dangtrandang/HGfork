@@ -270,6 +270,9 @@ export function useFeedViewport({
     wake();
     keepAlive();
     if (!isDesktop) {
+      try {
+        (window as unknown as { AndroidApp?: { setOrientation: (l: boolean) => void } })?.AndroidApp?.setOrientation(landscape);
+      } catch { /* ignore */ }
       try { void invoke("set_orientation", { landscape }); } catch { /* ignore */ }
       if (landscape) {
         try {
@@ -282,6 +285,9 @@ export function useFeedViewport({
   const exitFs = useCallback(() => {
     setClean(false);
     setFs(false);
+    try {
+      (window as unknown as { AndroidApp?: { setOrientation: (l: boolean) => void } })?.AndroidApp?.setOrientation(false);
+    } catch { /* ignore */ }
   }, [setClean, setFs]);
 
   useFsOrientation(fs, isDesktop, keepAlive, active);

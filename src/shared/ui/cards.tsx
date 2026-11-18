@@ -6,7 +6,7 @@ import { Button } from "./ios/controls";
 import { FilteredContent } from "./FilteredContent";
 
 function ScoreBadge({ score }: { score: number }) {
-  return Number.isFinite(score) && score > 0 ? <span className="ios-score-badge" aria-label={`评分 ${score.toFixed(1)}`}>
+  return Number.isFinite(score) && score > 0 ? <span className="ios-score-badge" aria-label={`Điểm ${score.toFixed(1)}`}>
     <IStarF size={12} />{score.toFixed(1)}
   </span> : null;
 }
@@ -14,13 +14,13 @@ function ScoreBadge({ score }: { score: number }) {
 export function MediaCard({ title, cover, subtitle, badge, progress, score, priority = false, onOpen, blockedReason }: {
   title: string; cover: string; subtitle?: string; badge?: string; progress?: string; score?: number; priority?: boolean; onOpen: () => void; blockedReason?: string | null;
 }) {
-  if (blockedReason) return <Button onClick={onOpen} className="ios-poster" aria-label="该内容命中屏蔽标签，查看提示">
+  if (blockedReason) return <Button onClick={onOpen} className="ios-poster" aria-label="Nội dung thuộc thẻ đã chặn, xem chi tiết">
     <span className="ios-poster-art flex flex-col items-center justify-center gap-3 px-3 text-center text-mut">
-      <span className="text-[14px] font-semibold">该内容命中屏蔽标签</span>
+      <span className="text-[14px] font-semibold">Nội dung thuộc thẻ đã chặn</span>
       <span className="text-[12px] break-words">{blockedReason}</span>
-      <span className="text-[13px] text-primary">查看提示</span>
+      <span className="text-[13px] text-primary">Xem chi tiết</span>
     </span>
-    <span className="ios-poster-title">已屏蔽内容</span>
+    <span className="ios-poster-title">Nội dung đã chặn</span>
     {progress && <span className="ios-poster-subtitle">{progress}</span>}
   </Button>;
   const hasScore = typeof score === "number" && Number.isFinite(score) && score > 0;
@@ -39,9 +39,9 @@ export function MediaCard({ title, cover, subtitle, badge, progress, score, prio
 
 export function WaterfallCard({ v, onOpen, priority = false }: { v: VideoCard; onOpen: () => void; priority?: boolean }) {
   return <MediaCard title={v.title} cover={v.cover} onOpen={onOpen} priority={priority} score={v.score}
-    badge={v.is_finished ? "已完结" : `更新至 ${v.episode_count} 集`}
+    badge={v.is_finished ? "Trọn bộ" : `Cập nhật tập ${v.episode_count}`}
     subtitle={v.tags?.slice(0, 2).join(" · ") || v.author?.name || "HGhubX"}
-    progress={`${fmt(v.hot)} 次播放`} />;
+    progress={`${fmt(v.hot)} lượt xem`} />;
 }
 
 export function Masonry({ videos, onOpen, wide = false, scopeKey }: {
@@ -54,8 +54,8 @@ export function Masonry({ videos, onOpen, wide = false, scopeKey }: {
 
 export function RowCard({ v, onOpen }: { v: VideoCard; onOpen: () => void }) {
   return <div className="ios-row-card"><MediaCard title={v.title} cover={v.cover} score={v.score} onOpen={onOpen}
-    badge={v.is_finished ? "完结" : `${v.episode_count} 集`}
-    subtitle={v.score ? `${v.score.toFixed(1)} 分 · ${v.tags?.[0] || "短剧"}` : v.tags?.slice(0, 2).join(" · ")} />
+    badge={v.is_finished ? "Trọn bộ" : `${v.episode_count} tập`}
+    subtitle={v.score ? `${v.score.toFixed(1)} điểm · ${v.tags?.[0] || "Phim ngắn"}` : v.tags?.slice(0, 2).join(" · ")} />
   </div>;
 }
 

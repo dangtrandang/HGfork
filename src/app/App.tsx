@@ -34,7 +34,7 @@ const FollowingPage = lazy(() => import("../features/account/User").then(module 
 const UserPage = lazy(() => import("../features/account/User").then(module => ({ default: module.UserPage })));
 
 function PageLoading() {
-  return <div className="absolute inset-0 grid place-items-center bg-bg"><Loader label="页面加载中" /></div>;
+  return <div className="absolute inset-0 grid place-items-center bg-bg"><Loader label="Đang tải trang…" /></div>;
 }
 
 const SELECTABLE_TEXT = 'input, textarea, [contenteditable="true"], .select-text, .article-body';
@@ -43,13 +43,13 @@ const isSelectableText = (target: EventTarget | null) => target instanceof Eleme
 function TabBar() {
   const { tab, setTab, platform } = useStore();
   const items = [
-    { key: "home", label: "首页", Icon: IHome, Active: IHomeF },
-    { key: "search", label: "搜索", Icon: ISearch, Active: ISearch },
-    { key: "category", label: "分类", Icon: IGrid, Active: IGridF },
-    { key: "profile", label: "我的", Icon: IUser, Active: IUserF },
+    { key: "home", label: "Trang chủ", Icon: IHome, Active: IHomeF },
+    { key: "search", label: "Tìm kiếm", Icon: ISearch, Active: ISearch },
+    { key: "category", label: "Thể loại", Icon: IGrid, Active: IGridF },
+    { key: "profile", label: "Tủ phim", Icon: IUser, Active: IUserF },
   ] as const;
   const index = items.findIndex(item => item.key === tab);
-  return <nav className="hg-tabbar ios-mobile-nav" aria-label="主导航" data-over-video={tab === "home"}
+  return <nav className="hg-tabbar ios-mobile-nav" aria-label="Điều hướng chính" data-over-video={tab === "home"}
     style={{ paddingBottom: platform === "android" ? "var(--sab, 16px)" : "calc(var(--sab, 16px) * .55)" }}>
       <div className="hg-glass">
       <div className="hg-drop" aria-hidden="true" style={{ transform: `translateX(${index * 100}%)` }}><LiquidIndicator /></div>
@@ -282,7 +282,8 @@ function MobileShell() {
 
 /* ============ 入口 ============ */
 export default function App() {
-  const { platform, loginOpen, setLoginOpen, tab, setTab, stack, pop, fs, setFs } = useStore();
+  const { platform, loginOpen, setLoginOpen, tab, setTab, stack, pop, fs, setFs, toast } = useStore();
+  const lastBackTime = useRef(0);
   useEffect(() => {
     tracePlayback("navigation.change", { tab, stack: stack.map(p => ({ page: p.kind, key: p.key })), login_open: loginOpen });
   }, [tab, stack, loginOpen]);
@@ -315,30 +316,62 @@ export default function App() {
     };
   }, [platform]);
 
-  /* —— 安卓硬件返回键 ——
-     层级：面板/弹层 → 全屏 → 登录框 → 页面栈 → 回首页 → 退出应用。
-     不注册这个监听，Tauri 会直接 webView.goBack() 或退出，表现就是「任意页面返回都回桌面」。 */
-  const backRef = useRef<() => void>(() => {});
+  /* —— Phím / Cử chỉ quay lại trên Android ——
+     Thứ tự: Bảng điều khiển / Popup → Thoát toàn màn hình player → Đóng Login → Lùi trang ngăn xếp → Về trang chủ → Ẩn app ra nền */
+  const backRef = useRef<() => boolean>(() => false);
   backRef.current = () => {
-    if (runBack()) return;                                  // 最上层弹窗/播放器面板
-    if (fs) { setFs(false); return; }                        // 沉浸全屏
-    if (getFullscreenElement()) { void exitDocumentFullscreen().catch(() => {}); return; }
-    if (loginOpen) { setLoginOpen(false); return; }
-    if (stack.length) { pop(); return; }
-    if (tab !== "home") { setTab("home"); return; }
-    invoke("plugin:app|exit", { code: 0 }).catch(() => {});
+    if (runBack()) return true;                                  // Bảng điều khiển, popup, menu
+    if (fs) {
+      setFs(false);                                             // Thoát toàn màn hình
+      try {
+        (window as unknown as { AndroidApp?: { setOrientation: (l: boolean) => void } })?.AndroidApp?.setOrientation(false);
+      } catch { /* ignore */ }
+      return true;
+    }
+    if (getFullscreenElement()) { void exitDocumentFullscreen().catch(() => {}); return true; }
+    if (loginOpen) { setLoginOpen(false); return true; }
+    if (stack.length) { pop(); return true; }
+    if (tab !== "home") { setTab("home"); return true; }
+
+    // Đang ở màn hình chính gốc: Phải vuốt 2 lần trong 2 giây mới thoát, tránh chạm nhầm khi mới mở app
+    const now = Date.now();
+    if (now - lastBackTime.current < 2000) {
+      return false; // Cho phép Android ẩn app ra nền
+    }
+    lastBackTime.current = now;
+    toast("Vuốt lần nữa để thoát ứng dụng", "info");
+    return true; // Nuốt sự kiện lần 1
   };
 
   useEffect(() => {
+    // Đăng ký trực tiếp cho MainActivity của Android gọi khi người dùng vuốt cạnh màn hình
+    (window as unknown as { __HG_BACK?: () => boolean }).__HG_BACK = () => {
+      try {
+        return backRef.current() !== false;
+      } catch {
+        return false;
+      }
+    };
+
     if (platform !== "android") return undefined;
     let disposed = false;
     let handle: { unregister: () => Promise<void> } | null = null;
-    addPluginListener("app", "back-button", () => backRef.current())
+    addPluginListener("app", "back-button", () => {
+      const consumed = backRef.current();
+      if (!consumed) {
+        try {
+          (window as unknown as { AndroidApp?: { moveToBackground: () => void } })?.AndroidApp?.moveToBackground();
+        } catch {
+          invoke("plugin:app|exit", { code: 0 }).catch(() => {});
+        }
+      }
+    })
       .then((l) => { if (disposed) l.unregister().catch(() => {}); else handle = l; })
       .catch(() => { /* 非安卓宿主忽略 */ });
     return () => {
       disposed = true;
       handle?.unregister().catch(() => {});
+      delete (window as unknown as { __HG_BACK?: () => boolean }).__HG_BACK;
     };
   }, [platform]);
 
